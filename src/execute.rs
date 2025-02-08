@@ -1,6 +1,6 @@
+use crate::cli::{BrightnessCommand, Mode, PixelCommand};
 use log::info;
 use servicepoint::{Brightness, Command, Connection};
-use crate::cli::{BrightnessCommand, Mode, PixelCommand};
 
 pub fn execute_mode(mode: Mode, connection: Connection) {
     match mode {
@@ -22,6 +22,11 @@ fn pixels(connection: &Connection, pixel_command: PixelCommand) {
 fn brightness(connection: &Connection, brightness_command: BrightnessCommand) {
     match brightness_command {
         BrightnessCommand::Reset => brightness_reset(&connection),
+        BrightnessCommand::Min => brightness_set(&connection, Brightness::MIN),
+        BrightnessCommand::Max => brightness_set(&connection, Brightness::MAX),
+        BrightnessCommand::Set { brightness } => {
+            brightness_set(&connection, Brightness::saturating_from(brightness))
+        }
     }
 }
 
@@ -37,4 +42,11 @@ fn brightness_reset(connection: &Connection) {
         .send(Command::Brightness(Brightness::MAX))
         .expect("Failed to reset brightness to maximum");
     info!("Reset brightness");
+}
+
+fn brightness_set(connection: &&Connection, brightness: Brightness) {
+    connection
+        .send(Command::Brightness(brightness))
+        .expect("Failed to set brightness");
+    info!("set brightness to {brightness:?}");
 }

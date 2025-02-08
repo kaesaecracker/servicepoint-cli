@@ -1,5 +1,5 @@
 #[derive(clap::Parser, std::fmt::Debug)]
-#[clap(version)]
+#[clap(version, arg_required_else_help = true)]
 pub struct Cli {
     #[arg(
         short,
@@ -19,7 +19,7 @@ pub struct Cli {
     #[clap(subcommand)]
     pub command: Mode,
     #[clap(short, long, help = "verbose logging")]
-    pub verbose: bool
+    pub verbose: bool,
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
@@ -48,6 +48,12 @@ pub enum PixelCommand {
 pub enum BrightnessCommand {
     #[command(visible_alias = "r")]
     Reset,
+    #[command(visible_alias = "s")]
+    Set {
+        brightness: u8,
+    },
+    Min,
+    Max,
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
