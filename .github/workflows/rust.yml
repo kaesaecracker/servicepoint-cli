@@ -1,0 +1,35 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+  # Make sure CI fails on all warnings, including Clippy lints
+  RUSTFLAGS: "-Dwarnings"
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update repos
+        run: sudo apt-get update -qq
+      - name: Install rust toolchain
+        run: sudo apt-get install -qy cargo-1.80 rust-1.80-clippy
+      - name: Install system dependencies
+        run: sudo apt-get install -qy liblzma-dev
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features
+
+      - name: Build
+        run: cargo build --release --verbose
