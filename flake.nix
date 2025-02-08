@@ -55,7 +55,6 @@
             };
             nativeBuildInputs = with pkgs; [
               pkg-config
-              makeWrapper
             ];
             strictDeps = true;
             buildInputs = with pkgs; [
