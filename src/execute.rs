@@ -15,17 +15,17 @@ pub fn execute_mode(mode: Mode, connection: Connection) {
 
 fn pixels(connection: &Connection, pixel_command: PixelCommand) {
     match pixel_command {
-        PixelCommand::Reset => pixels_reset(&connection),
+        PixelCommand::Reset => pixels_reset(connection),
     }
 }
 
 fn brightness(connection: &Connection, brightness_command: BrightnessCommand) {
     match brightness_command {
-        BrightnessCommand::Reset => brightness_reset(&connection),
-        BrightnessCommand::Min => brightness_set(&connection, Brightness::MIN),
-        BrightnessCommand::Max => brightness_set(&connection, Brightness::MAX),
+        BrightnessCommand::Reset => brightness_reset(connection),
+        BrightnessCommand::Min => brightness_set(connection, Brightness::MIN),
+        BrightnessCommand::Max => brightness_set(connection, Brightness::MAX),
         BrightnessCommand::Set { brightness } => {
-            brightness_set(&connection, Brightness::saturating_from(brightness))
+            brightness_set(connection, Brightness::saturating_from(brightness))
         }
     }
 }
@@ -44,7 +44,7 @@ fn brightness_reset(connection: &Connection) {
     info!("Reset brightness");
 }
 
-fn brightness_set(connection: &&Connection, brightness: Brightness) {
+fn brightness_set(connection: &Connection, brightness: Brightness) {
     connection
         .send(Command::Brightness(brightness))
         .expect("Failed to set brightness");

@@ -18,7 +18,7 @@ fn main() {
 }
 
 fn make_connection(destination: String, transport: Protocol) -> Connection {
-    let connection = match transport {
+    match transport {
         Protocol::Udp => Connection::open(destination).expect("Failed to open UDP connection"),
         Protocol::WebSocket => {
             let url = destination.parse().expect(
@@ -27,8 +27,7 @@ fn make_connection(destination: String, transport: Protocol) -> Connection {
             Connection::open_websocket(url).expect("Failed to open WebSocket connection")
         }
         Protocol::Fake => Connection::Fake,
-    };
-    connection
+    }
 }
 
 fn init_logging(debug: bool) {
