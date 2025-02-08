@@ -1,8 +1,16 @@
 [package]
 name = "servicepoint-cli"
+description = "A command line interface for the ServicePoint display."
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.78.0"
+publish = true
+resolver = "2"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+repository = "https://git.berlin.ccc.de/servicepoint/servicepoint-cli"
+homepage = "https://crates.io/crates/servicepoint-cli"
+keywords = ["cccb", "cccb-servicepoint", "cli"]
 
 [dependencies]
 servicepoint = { version = "0.13.0", features = ["protocol_websocket"] }

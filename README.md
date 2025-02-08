@@ -4,16 +4,15 @@ This repository contains a command line interface for the ServicePoint display.
 
 To send commands, this uses the [servicepoint crate](https://crates.io/crates/servicepoint).
 
-## Running
+## Installation with cargo
 
-Any OS:
 ```shell
-git clone https://git.berlin.ccc.de/servicepoint/servicepoint-cli.git
-cd servicepoint-cli
-cargo run -- <args>
+cargo install servicepoint-cli
 ```
 
-Using nix:
+If you have set your PATH to include the ~/.cargo/bin, you can now run `servicepoint-cli`.
+
+## Running with nix
 
 ```shell
 # from CCCB Forgejo
@@ -21,6 +20,15 @@ nix run git+https://git.berlin.ccc.de/servicepoint/servicepoint-cli.git -- <args
 
 # from GitHub mirror
 nix run github:kaesaecracker/servicepoint-cli -- <args>
+```
+
+
+## Running a debug build
+
+```shell
+git clone https://git.berlin.ccc.de/servicepoint/servicepoint-cli.git
+cd servicepoint-cli
+cargo run -- <args>
 ```
 
 ## Contributing
