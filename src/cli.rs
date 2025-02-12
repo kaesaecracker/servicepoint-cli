@@ -38,14 +38,11 @@ pub enum Mode {
         #[clap(subcommand)]
         brightness_command: BrightnessCommand,
     },
-    StreamStdin {
-        #[arg(long, short, default_value_t = false)]
-        slow: bool,
-    },
-    StreamScreen {
-        #[command(flatten)]
-        options: StreamScreenOptions,
-    },
+    #[command(visible_alias = "s")]
+    Stream {
+        #[clap(subcommand)]
+        stream_command: StreamCommand,
+    }
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
@@ -73,3 +70,14 @@ pub enum Protocol {
     Fake,
 }
 
+#[derive(clap::Parser, std::fmt::Debug)]
+pub enum StreamCommand {
+    Stdin {
+        #[arg(long, short, default_value_t = false)]
+        slow: bool,
+    },
+    Screen {
+        #[command(flatten)]
+        options: StreamScreenOptions,
+    },
+}

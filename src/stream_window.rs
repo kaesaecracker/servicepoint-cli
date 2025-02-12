@@ -2,7 +2,7 @@ use image::{
     imageops::{dither, resize, BiLevel, FilterType},
     DynamicImage, ImageBuffer, Rgb, Rgba,
 };
-use log::{debug, error, warn};
+use log::{error, warn};
 use scap::{
     capturer::{Capturer, Options},
     frame::convert_bgra_to_rgb,
@@ -11,13 +11,12 @@ use scap::{
 use servicepoint::{
     Bitmap, Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH,
 };
-use std::ops::Div;
 use std::time::Duration;
 
 #[derive(clap::Parser, std::fmt::Debug, Clone)]
 pub struct StreamScreenOptions {
-    #[arg(long, short, default_value_t = true)]
-    pub dither: bool,
+    #[arg(long, short, default_value_t = false)]
+    pub no_dither: bool,
 }
 
 pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
@@ -38,7 +37,7 @@ pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
             FilterType::Nearest,
         );
 
-        if options.dither {
+        if !options.no_dither {
             dither(&mut frame, &BiLevel);
         }
 
@@ -71,9 +70,7 @@ fn start_capture() -> Option<Capturer> {
     }
 
     let mut capturer = Capturer::build(Options {
-        fps: FRAME_PACING
-            .div_duration_f32(Duration::from_secs(1))
-            .div(2f32) as u32,
+        fps: FRAME_PACING.div_duration_f32(Duration::from_secs(1)) as u32,
         target: None,
         show_cursor: true,
         show_highlight: true,

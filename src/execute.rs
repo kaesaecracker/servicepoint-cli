@@ -1,4 +1,4 @@
-use crate::cli::{BrightnessCommand, Mode, PixelCommand};
+use crate::cli::{BrightnessCommand, Mode, PixelCommand, StreamCommand};
 use crate::stream_stdin::stream_stdin;
 use crate::stream_window::stream_window;
 use log::info;
@@ -12,8 +12,10 @@ pub fn execute_mode(mode: Mode, connection: Connection) {
         }
         Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
         Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
-        Mode::StreamStdin { slow } => stream_stdin(&connection, slow),
-        Mode::StreamScreen { options } => stream_window(&connection, options),
+        Mode::Stream { stream_command } => match stream_command {
+            StreamCommand::Stdin { slow } => stream_stdin(&connection, slow),
+            StreamCommand::Screen { options } => stream_window(&connection, options),
+        },
     }
 }
 
