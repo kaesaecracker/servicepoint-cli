@@ -6,6 +6,7 @@ use servicepoint::Connection;
 mod cli;
 mod execute;
 mod stream_stdin;
+mod stream_window;
 
 fn main() {
     let cli = Cli::parse();

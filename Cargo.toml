@@ -14,6 +14,8 @@ keywords = ["cccb", "cccb-servicepoint", "cli"]
 
 [dependencies]
 servicepoint = { version = "0.13.0", features = ["protocol_websocket"] }
-clap = { version = "4.5", features = ["derive"]}
+clap = { version = "4.5", features = ["derive"] }
 env_logger = "0.11"
 log = "0.4"
+scap = "0.0.8"
+image = "0.25.5"

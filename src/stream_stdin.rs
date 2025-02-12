@@ -1,6 +1,6 @@
-use std::thread::sleep;
 use log::warn;
 use servicepoint::*;
+use std::thread::sleep;
 
 pub(crate) fn stream_stdin(connection: &Connection, slow: bool) {
     warn!("This mode will break when using multi-byte characters and does not support ANSI escape sequences yet.");
@@ -8,7 +8,7 @@ pub(crate) fn stream_stdin(connection: &Connection, slow: bool) {
         connection,
         mirror: CharGrid::new(TILE_WIDTH, TILE_HEIGHT),
         y: 0,
-        slow
+        slow,
     };
     app.run()
 }

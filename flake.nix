@@ -1,5 +1,5 @@
 {
-  description = "Flake for servicepoint-cli";
+  description = "Flake for command line interface of the ServicePoint display.";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
@@ -55,12 +55,25 @@
             };
             nativeBuildInputs = with pkgs; [
               pkg-config
+              libclang
+              rustPlatform.bindgenHook
             ];
             strictDeps = true;
-            buildInputs = with pkgs; [
-              xe
-              xz
-            ];
+            buildInputs =
+              with pkgs;
+              [
+                xe
+                xz
+                clang
+              ]
+              ++ lib.optionals pkgs.stdenv.isLinux (
+                with pkgs;
+                [
+                  dbus
+                  pipewire
+                  libclang
+                ]
+              );
           };
 
           default = servicepoint-cli;

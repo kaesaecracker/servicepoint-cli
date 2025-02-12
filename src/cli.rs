@@ -1,3 +1,5 @@
+use crate::stream_window::StreamScreenOptions;
+
 #[derive(clap::Parser, std::fmt::Debug)]
 #[clap(version, arg_required_else_help = true)]
 pub struct Cli {
@@ -38,8 +40,12 @@ pub enum Mode {
     },
     StreamStdin {
         #[arg(long, short, default_value_t = false)]
-        slow: bool
-    }
+        slow: bool,
+    },
+    StreamScreen {
+        #[command(flatten)]
+        options: StreamScreenOptions,
+    },
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
@@ -66,3 +72,4 @@ pub enum Protocol {
     WebSocket,
     Fake,
 }
+
