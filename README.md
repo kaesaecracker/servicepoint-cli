@@ -57,11 +57,29 @@ Options:
 Usage: servicepoint-cli stream <COMMAND>
 
 Commands:
-  stdin   
-  screen  
+  stdin   Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`
+  screen  Stream the default source to the display. On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen.
   help    Print this message or the help of the given subcommand(s)
+```
+
+#### Screen
+
+```
+Usage: servicepoint-cli stream screen [OPTIONS]
 
 Options:
+  -n, --no-dither  Disable dithering
+  -p, --pointer    Show mouse pointer in video feed
+  -h, --help       Print help
+```
+
+#### Stdin
+
+```
+Usage: servicepoint-cli stream stdin [OPTIONS]
+
+Options:
+  -s, --slow  
   -h, --help  Print help
 ```
 
@@ -71,26 +89,22 @@ Options:
 Usage: servicepoint-cli brightness <COMMAND>
 
 Commands:
-  reset  [aliases: r]
-  set    [aliases: s]
-  min    
-  max    
-  help   Print this message or the help of the given subcommand(s)
-
-Options:
-  -h, --help  Print help
+  max   Reset brightness to the default (max) level [aliases: r, reset]
+  set   Set one brightness for the whole screen [aliases: s]
+  min   Set brightness to lowest possible level.
+  help  Print this message or the help of the given subcommand(s)
 ```
 
 ### Pixels
+
 ```
 Usage: servicepoint-cli pixels <COMMAND>
 
 Commands:
-  reset  [aliases: r]
-  help   Print this message or the help of the given subcommand(s)
-
-Options:
-  -h, --help  Print help
+  off     Reset all pixels to the default (off) state [aliases: r, reset]
+  invert  Invert the state of all pixels [aliases: i]
+  on      Set all pixels to the on state
+  help    Print this message or the help of the given subcommand(s)
 ```
 
 ## Contributing

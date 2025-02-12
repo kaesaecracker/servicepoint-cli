@@ -1,8 +1,9 @@
+use crate::cli::StreamScreenOptions;
 use image::{
     imageops::{dither, resize, BiLevel, FilterType},
-    DynamicImage, ImageBuffer, Rgb, Rgba,
+    DynamicImage, ImageBuffer, Luma, Rgb, Rgba,
 };
-use log::{error, warn};
+use log::{error, info, warn};
 use scap::{
     capturer::{Capturer, Options},
     frame::convert_bgra_to_rgb,
@@ -13,34 +14,19 @@ use servicepoint::{
 };
 use std::time::Duration;
 
-#[derive(clap::Parser, std::fmt::Debug, Clone)]
-pub struct StreamScreenOptions {
-    #[arg(long, short, default_value_t = false)]
-    pub no_dither: bool,
-}
-
 pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
-    let capturer = match start_capture() {
+    info!("Starting capture with options: {:?}", options);
+    warn!("this implementation does not drop any frames - set a lower fps or disable dithering if your computer cannot keep up.");
+
+    let capturer = match start_capture(&options) {
         Some(value) => value,
         None => return,
     };
 
     let mut bitmap = Bitmap::new(PIXEL_WIDTH, PIXEL_HEIGHT);
+    info!("now starting to stream images");
     loop {
-        let frame = capturer.get_next_frame().expect("failed to capture frame");
-        let frame = frame_to_image(frame);
-        let frame = frame.grayscale().to_luma8();
-        let mut frame = resize(
-            &frame,
-            PIXEL_WIDTH as u32,
-            PIXEL_HEIGHT as u32,
-            FilterType::Nearest,
-        );
-
-        if !options.no_dither {
-            dither(&mut frame, &BiLevel);
-        }
-
+        let frame = get_next_frame(&capturer, options.no_dither);
         for (mut dest, src) in bitmap.iter_mut().zip(frame.pixels()) {
             *dest = src.0[0] > u8::MAX / 2;
         }
@@ -55,7 +41,24 @@ pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
     }
 }
 
-fn start_capture() -> Option<Capturer> {
+fn get_next_frame(capturer: &Capturer, no_dither: bool) -> ImageBuffer<Luma<u8>, Vec<u8>> {
+    let frame = capturer.get_next_frame().expect("failed to capture frame");
+    let frame = frame_to_image(frame);
+    let frame = frame.grayscale().to_luma8();
+    let mut frame = resize(
+        &frame,
+        PIXEL_WIDTH as u32,
+        PIXEL_HEIGHT as u32,
+        FilterType::Nearest,
+    );
+
+    if !no_dither {
+        dither(&mut frame, &BiLevel);
+    }
+    frame
+}
+
+fn start_capture(options: &StreamScreenOptions) -> Option<Capturer> {
     if !scap::is_supported() {
         error!("platform not supported by scap");
         return None;
@@ -71,11 +74,8 @@ fn start_capture() -> Option<Capturer> {
 
     let mut capturer = Capturer::build(Options {
         fps: FRAME_PACING.div_duration_f32(Duration::from_secs(1)) as u32,
-        target: None,
-        show_cursor: true,
-        show_highlight: true,
-        excluded_targets: None,
-        output_type: scap::frame::FrameType::BGR0,
+        show_cursor: options.pointer,
+        output_type: scap::frame::FrameType::BGR0, // this is more like a suggestion
         ..Default::default()
     })
     .expect("failed to create screen capture");
