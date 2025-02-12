@@ -36,6 +36,10 @@ pub enum Mode {
         #[clap(subcommand)]
         brightness_command: BrightnessCommand,
     },
+    StreamStdin {
+        #[arg(long, short, default_value_t = false)]
+        slow: bool
+    }
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]

@@ -1,6 +1,7 @@
 use crate::cli::{BrightnessCommand, Mode, PixelCommand};
 use log::info;
 use servicepoint::{Brightness, Command, Connection};
+use crate::stream_stdin::stream_stdin;
 
 pub fn execute_mode(mode: Mode, connection: Connection) {
     match mode {
@@ -10,6 +11,7 @@ pub fn execute_mode(mode: Mode, connection: Connection) {
         }
         Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
         Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
+        Mode::StreamStdin{slow} => stream_stdin(&connection, slow),
     }
 }
 

@@ -5,6 +5,7 @@ use servicepoint::Connection;
 
 mod cli;
 mod execute;
+mod stream_stdin;
 
 fn main() {
     let cli = Cli::parse();
