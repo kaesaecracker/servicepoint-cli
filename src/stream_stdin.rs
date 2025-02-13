@@ -2,7 +2,7 @@ use log::warn;
 use servicepoint::*;
 use std::thread::sleep;
 
-pub(crate) fn stream_stdin(connection: &Connection, slow: bool) {
+pub(crate) fn stream_stdin(connection: Connection, slow: bool) {
     warn!("This mode will break when using multi-byte characters and does not support ANSI escape sequences yet.");
     let mut app = App {
         connection,
@@ -13,14 +13,14 @@ pub(crate) fn stream_stdin(connection: &Connection, slow: bool) {
     app.run()
 }
 
-struct App<'t> {
-    connection: &'t Connection,
+struct App {
+    connection: Connection,
     mirror: CharGrid,
     y: usize,
     slow: bool,
 }
 
-impl<'t> App<'t> {
+impl App {
     fn run(&mut self) {
         self.connection
             .send(Command::Clear)

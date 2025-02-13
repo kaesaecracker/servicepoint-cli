@@ -13,7 +13,7 @@ pub fn execute_mode(mode: Mode, connection: Connection) {
         Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
         Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
         Mode::Stream { stream_command } => match stream_command {
-            StreamCommand::Stdin { slow } => stream_stdin(&connection, slow),
+            StreamCommand::Stdin { slow } => stream_stdin(connection, slow),
             StreamCommand::Screen { options } => stream_window(&connection, options),
         },
     }
