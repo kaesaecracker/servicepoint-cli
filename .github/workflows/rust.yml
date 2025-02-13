@@ -26,7 +26,7 @@ jobs:
       - name: Install rust toolchain
         run: sudo apt-get install -qy cargo-1.80 rust-1.80-clippy
       - name: Install system dependencies
-        run: sudo apt-get install -qy liblzma-dev
+        run: sudo apt-get install -qy liblzma-dev libpipewire-0.3-dev libclang-dev libdbus-1-dev
 
       - name: Run Clippy
         run: cargo clippy --all-targets --all-features
