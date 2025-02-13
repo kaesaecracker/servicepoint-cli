@@ -1,10 +1,17 @@
-use crate::cli::{Cli, Protocol};
+use crate::{
+    brightness::{brightness, brightness_set},
+    cli::{Cli, Mode, Protocol, StreamCommand},
+    pixels::{pixels, pixels_off},
+    stream_stdin::stream_stdin,
+    stream_window::stream_window,
+};
 use clap::Parser;
 use log::debug;
-use servicepoint::Connection;
+use servicepoint::{Brightness, Connection};
 
+mod brightness;
 mod cli;
-mod execute;
+mod pixels;
 mod stream_stdin;
 mod stream_window;
 
@@ -16,7 +23,22 @@ fn main() {
     let connection = make_connection(cli.destination, cli.transport);
     debug!("connection established: {:#?}", connection);
 
-    execute::execute_mode(cli.command, connection);
+    execute_mode(cli.command, connection);
+}
+
+pub fn execute_mode(mode: Mode, connection: Connection) {
+    match mode {
+        Mode::ResetEverything => {
+            brightness_set(&connection, Brightness::MAX);
+            pixels_off(&connection);
+        }
+        Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
+        Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
+        Mode::Stream { stream_command } => match stream_command {
+            StreamCommand::Stdin { slow } => stream_stdin(connection, slow),
+            StreamCommand::Screen { options } => stream_window(&connection, options),
+        },
+    }
 }
 
 fn make_connection(destination: String, transport: Protocol) -> Connection {

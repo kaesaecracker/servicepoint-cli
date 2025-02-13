@@ -53,6 +53,7 @@ pub enum PixelCommand {
     #[command(
         visible_alias = "r",
         visible_alias = "reset",
+        visible_alias = "clear",
         about = "Reset all pixels to the default (off) state"
     )]
     Off,
