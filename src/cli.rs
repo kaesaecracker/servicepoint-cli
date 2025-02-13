@@ -94,11 +94,17 @@ pub enum StreamCommand {
         about = "Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`"
     )]
     Stdin {
-        #[arg(long, short, default_value_t = false)]
+        #[arg(
+            long,
+            short,
+            default_value_t = false,
+            help = "Wait for a short amount of time before sending the next line"
+        )]
         slow: bool,
     },
     #[clap(about = "Stream the default source to the display. \
-        On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen.")]
+        On Linux Wayland, this pops up a screen or window chooser, \
+        but it also may directly start streaming your main screen.")]
     Screen {
         #[command(flatten)]
         options: StreamScreenOptions,
@@ -107,7 +113,7 @@ pub enum StreamCommand {
 
 #[derive(clap::Parser, std::fmt::Debug, Clone)]
 pub struct StreamScreenOptions {
-    #[arg(long, short, default_value_t = false, help = "Disable dithering")]
+    #[arg(long, short, default_value_t = false, help = "Disable dithering - improves performance")]
     pub no_dither: bool,
 
     #[arg(

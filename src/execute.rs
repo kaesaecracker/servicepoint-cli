@@ -23,14 +23,14 @@ fn pixels(connection: &Connection, pixel_command: PixelCommand) {
     match pixel_command {
         PixelCommand::Off => pixels_reset(connection),
         PixelCommand::Invert => pixels_invert(connection),
-        PixelCommand::On => pixels_on(connection)
+        PixelCommand::On => pixels_on(connection),
     }
 }
 
 fn pixels_on(connection: &Connection) {
     let mask = BitVec::repeat(true, PIXEL_COUNT);
     connection
-        .send(Command::BitmapLinearXor(0, mask, CompressionCode::Lzma))
+        .send(Command::BitmapLinear(0, mask, CompressionCode::Lzma))
         .expect("could not send command")
 }
 
