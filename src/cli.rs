@@ -118,14 +118,6 @@ pub struct StreamScreenOptions {
         long,
         short,
         default_value_t = false,
-        help = "Disable dithering - improves performance"
-    )]
-    pub no_dither: bool,
-
-    #[arg(
-        long,
-        short,
-        default_value_t = false,
         help = "Show mouse pointer in video feed"
     )]
     pub pointer: bool,

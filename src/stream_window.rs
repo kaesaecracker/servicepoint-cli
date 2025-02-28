@@ -1,7 +1,7 @@
 use crate::cli::StreamScreenOptions;
-use crate::ledwand_dither::{LedwandDither, LedwandDitherOptions};
+use crate::ledwand_dither::*;
 use image::{
-    imageops::{dither, resize, BiLevel, FilterType},
+    imageops::{resize, FilterType},
     DynamicImage, ImageBuffer, Luma, Rgb, Rgba,
 };
 use log::{error, info, warn};
@@ -11,42 +11,31 @@ use scap::{
     frame::Frame,
 };
 use servicepoint::{
-    Bitmap, Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH,
+    Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH,
 };
 use std::time::Duration;
 
 pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
     info!("Starting capture with options: {:?}", options);
-    warn!("this implementation does not drop any frames - set a lower fps or disable dithering if your computer cannot keep up.");
 
     let capturer = match start_capture(&options) {
         Some(value) => value,
         None => return,
     };
 
-    let mut bitmap = Bitmap::new(PIXEL_WIDTH, PIXEL_HEIGHT);
     info!("now starting to stream images");
     loop {
         let mut frame = get_next_frame(&capturer);
 
-        LedwandDither::histogram_correction(&mut frame);
+        histogram_correction(&mut frame);
 
         let mut orig = frame.clone();
-        LedwandDither::blur(&orig, &mut frame);
+        blur(&orig, &mut frame);
 
         std::mem::swap(&mut frame, &mut orig);
-        LedwandDither::sharpen(&orig, &mut frame);
+        sharpen(&orig, &mut frame);
 
-        let cutoff = if options.no_dither {
-            LedwandDither::median_brightness(&frame)
-        } else {
-            dither(&mut frame, &BiLevel);
-            u8::MAX / 2
-        };
-
-        for (mut dest, src) in bitmap.iter_mut().zip(frame.pixels()) {
-            *dest = src.0[0] > cutoff;
-        }
+        let bitmap = ostromoukhov_dither(frame, u8::MAX / 2);
 
         connection
             .send(Command::BitmapLinearWin(
