@@ -133,8 +133,7 @@ pub struct StreamScreenOptions {
 
     #[arg(
         long,
-        help = "Disable dithering.
-                Brightness will be adjusted so that around half of the pixels are on."
+        help = "Disable dithering. Brightness will be adjusted so that around half of the pixels are on."
     )]
     pub no_dither: bool,
 }
