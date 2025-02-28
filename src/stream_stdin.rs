@@ -72,6 +72,7 @@ impl App {
 
     fn single_line(&mut self, line: &str) {
         let mut line_grid = CharGrid::new(TILE_WIDTH, 1);
+        line_grid.fill(' ');
         Self::line_onto_grid(&mut line_grid, 0, line);
         Self::line_onto_grid(&mut self.mirror, self.y, line);
         self.connection

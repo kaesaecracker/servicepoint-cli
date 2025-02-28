@@ -1,6 +1,6 @@
-use servicepoint::{Brightness, Command, Connection};
-use log::info;
 use crate::cli::BrightnessCommand;
+use log::info;
+use servicepoint::{Brightness, Command, Connection};
 
 pub(crate) fn brightness(connection: &Connection, brightness_command: BrightnessCommand) {
     match brightness_command {

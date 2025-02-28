@@ -114,7 +114,12 @@ pub enum StreamCommand {
 
 #[derive(clap::Parser, std::fmt::Debug, Clone)]
 pub struct StreamScreenOptions {
-    #[arg(long, short, default_value_t = false, help = "Disable dithering - improves performance")]
+    #[arg(
+        long,
+        short,
+        default_value_t = false,
+        help = "Disable dithering - improves performance"
+    )]
     pub no_dither: bool,
 
     #[arg(

@@ -1,6 +1,6 @@
-use servicepoint::{BitVec, Command, CompressionCode, Connection, PIXEL_COUNT};
-use log::info;
 use crate::cli::PixelCommand;
+use log::info;
+use servicepoint::{BitVec, Command, CompressionCode, Connection, PIXEL_COUNT};
 
 pub(crate) fn pixels(connection: &Connection, pixel_command: PixelCommand) {
     match pixel_command {

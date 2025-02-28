@@ -1,4 +1,5 @@
 use crate::cli::StreamScreenOptions;
+use crate::ledwand_dither::{LedwandDither, LedwandDitherOptions};
 use image::{
     imageops::{dither, resize, BiLevel, FilterType},
     DynamicImage, ImageBuffer, Luma, Rgb, Rgba,
@@ -26,9 +27,18 @@ pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
     let mut bitmap = Bitmap::new(PIXEL_WIDTH, PIXEL_HEIGHT);
     info!("now starting to stream images");
     loop {
-        let frame = get_next_frame(&capturer, options.no_dither);
+        let mut frame = get_next_frame(&capturer);
+
+        LedwandDither::histogram_correction(&mut frame);
+        let cutoff = if options.no_dither {
+            LedwandDither::median_brightness(&frame)
+        } else {
+            dither(&mut frame, &BiLevel);
+            u8::MAX / 2
+        };
+
         for (mut dest, src) in bitmap.iter_mut().zip(frame.pixels()) {
-            *dest = src.0[0] > u8::MAX / 2;
+            *dest = src.0[0] > cutoff;
         }
 
         connection
@@ -41,21 +51,18 @@ pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
     }
 }
 
-fn get_next_frame(capturer: &Capturer, no_dither: bool) -> ImageBuffer<Luma<u8>, Vec<u8>> {
+/// returns next frame from the capturer, resized and grayscale
+fn get_next_frame(capturer: &Capturer) -> ImageBuffer<Luma<u8>, Vec<u8>> {
     let frame = capturer.get_next_frame().expect("failed to capture frame");
     let frame = frame_to_image(frame);
     let frame = frame.grayscale().to_luma8();
-    let mut frame = resize(
+
+    resize(
         &frame,
         PIXEL_WIDTH as u32,
         PIXEL_HEIGHT as u32,
         FilterType::Nearest,
-    );
-
-    if !no_dither {
-        dither(&mut frame, &BiLevel);
-    }
-    frame
+    )
 }
 
 fn start_capture(options: &StreamScreenOptions) -> Option<Capturer> {
