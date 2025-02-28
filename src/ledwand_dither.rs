@@ -1,6 +1,6 @@
 //! Based on https://github.com/WarkerAnhaltRanger/CCCB_Ledwand
 
-use image::GrayImage;
+use image::{GenericImage, GrayImage};
 use servicepoint::{PIXEL_HEIGHT, PIXEL_WIDTH};
 
 pub struct LedwandDither {
@@ -50,13 +50,13 @@ impl LedwandDither {
         image: &GrayImage,
         histogram: GrayHistogram,
     ) -> HistogramCorrection {
-        let adjustment_pixels = image.len() / 100;
+        let adjustment_pixels = image.len() / PIXEL_HEIGHT;
 
         let mut num_pixels = 0;
         let mut brightness = 0;
 
         let mincut = loop {
-            num_pixels += histogram[brightness as usize] as usize;
+            num_pixels += histogram[brightness as usize];
             brightness += 1;
             if num_pixels >= adjustment_pixels {
                 break u8::min(brightness, 20);
@@ -64,7 +64,7 @@ impl LedwandDither {
         };
 
         let minshift = loop {
-            num_pixels += histogram[brightness as usize] as usize;
+            num_pixels += histogram[brightness as usize];
             brightness += 1;
             if num_pixels >= 2 * adjustment_pixels {
                 break u8::min(brightness, 64);
@@ -74,7 +74,7 @@ impl LedwandDither {
         brightness = u8::MAX;
         num_pixels = 0;
         let maxshift = loop {
-            num_pixels += histogram[brightness as usize] as usize;
+            num_pixels += histogram[brightness as usize];
             brightness -= 1;
             if num_pixels >= 2 * adjustment_pixels {
                 break u8::max(brightness, 192);
@@ -92,12 +92,7 @@ impl LedwandDither {
     }
 
     fn apply_histogram_correction(image: &mut GrayImage, correction: HistogramCorrection) {
-        let midpoint = image.width() / 2;
-        for (x, _, pixel) in image.enumerate_pixels_mut() {
-            if x > midpoint {
-                continue;
-            }
-
+        for pixel in image.pixels_mut() {
             let pixel = &mut pixel.0[0];
             let value = (*pixel as f32 + correction.pre_offset) * correction.factor
                 + correction.post_offset;
@@ -116,12 +111,50 @@ impl LedwandDither {
 
         let mut num_pixels = 0;
         for brightness in u8::MIN..=u8::MAX {
-            num_pixels += histogram[brightness as usize] as usize;
+            num_pixels += histogram[brightness as usize];
             if num_pixels >= midpoint {
                 return brightness;
             }
         }
 
         unreachable!("Somehow less pixels where counted in the histogram than exist in the image")
+    }
+
+    pub fn blur(source: &GrayImage, destination: &mut GrayImage) {
+        assert_eq!(source.len(), destination.len());
+
+        Self::copy_border(source, destination);
+        Self::blur_inner_pixels(source, destination);
+    }
+
+    fn copy_border(source: &GrayImage, destination: &mut GrayImage) {
+        let last_row = source.height() -1;
+        for x in 0..source.width() {
+            destination[(x, 0)] = source[(x, 0)];
+            destination[(x, last_row)] = source[(x, last_row)];
+        }
+        let last_col = source.width() - 1;
+        for y in 0..source.height() {
+            destination[(0, y)] = source[(0, y)];
+            destination[(last_col, y)] = source[(last_col, y)];
+        }
+    }
+
+    fn blur_inner_pixels(source: &GrayImage, destination: &mut GrayImage) {
+        for y in 1..source.height() - 2 {
+            for x in 1..source.width() - 2 {
+                let weighted_sum = source.get_pixel(x - 1, y - 1).0[0] as u32
+                    + source.get_pixel(x, y - 1).0[0] as u32
+                    + source.get_pixel(x + 1, y - 1).0[0] as u32
+                    + source.get_pixel(x - 1, y).0[0] as u32
+                    + 8 * source.get_pixel(x, y).0[0] as u32
+                    + source.get_pixel(x + 1, y).0[0] as u32
+                    + source.get_pixel(x - 1, y + 1).0[0] as u32
+                    + source.get_pixel(x, y + 1).0[0] as u32
+                    + source.get_pixel(x + 1, y + 1).0[0] as u32;
+                let blurred = weighted_sum / 16;
+                destination.get_pixel_mut(x, y).0[0] = blurred.clamp(u8::MIN as u32, u8::MAX as u32) as u8;
+            }
+        }
     }
 }
