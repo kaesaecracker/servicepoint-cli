@@ -10,9 +10,7 @@ use scap::{
     frame::convert_bgra_to_rgb,
     frame::Frame,
 };
-use servicepoint::{
-    Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH,
-};
+use servicepoint::{Bitmap, Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH};
 use std::time::Duration;
 
 pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
@@ -27,15 +25,29 @@ pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
     loop {
         let mut frame = get_next_frame(&capturer);
 
-        histogram_correction(&mut frame);
+        if !options.no_hist {
+            histogram_correction(&mut frame);
+        }
 
         let mut orig = frame.clone();
-        blur(&orig, &mut frame);
 
-        std::mem::swap(&mut frame, &mut orig);
-        sharpen(&orig, &mut frame);
+        if !options.no_blur {
+            blur(&orig, &mut frame);
+            std::mem::swap(&mut frame, &mut orig);
+        }
 
-        let bitmap = ostromoukhov_dither(frame, u8::MAX / 2);
+        if !options.no_sharp {
+            sharpen(&orig, &mut frame);
+            std::mem::swap(&mut frame, &mut orig);
+        }
+
+        let bitmap = if options.no_dither {
+            let cutoff = median_brightness(&orig);
+            let bits = orig.iter().map(move |x| x > &cutoff).collect();
+            Bitmap::from_bitvec(orig.width() as usize, bits)
+        } else {
+            ostromoukhov_dither(orig, u8::MAX / 2)
+        };
 
         connection
             .send(Command::BitmapLinearWin(

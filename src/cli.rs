@@ -121,4 +121,20 @@ pub struct StreamScreenOptions {
         help = "Show mouse pointer in video feed"
     )]
     pub pointer: bool,
+
+    #[arg(long, help = "Disable histogram correction")]
+    pub no_hist: bool,
+
+    #[arg(long, help = "Disable blur")]
+    pub no_blur: bool,
+
+    #[arg(long, help = "Disable sharpening")]
+    pub no_sharp: bool,
+
+    #[arg(
+        long,
+        help = "Disable dithering.
+                Brightness will be adjusted so that around half of the pixels are on."
+    )]
+    pub no_dither: bool,
 }
