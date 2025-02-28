@@ -127,6 +127,13 @@ impl LedwandDither {
         Self::blur_inner_pixels(source, destination);
     }
 
+    pub fn sharpen(source: &GrayImage, destination: &mut GrayImage) {
+        assert_eq!(source.len(), destination.len());
+
+        Self::copy_border(source, destination);
+        Self::sharpen_inner_pixels(source, destination);
+    }
+
     fn copy_border(source: &GrayImage, destination: &mut GrayImage) {
         let last_row = source.height() -1;
         for x in 0..source.width() {
@@ -154,6 +161,23 @@ impl LedwandDither {
                     + source.get_pixel(x + 1, y + 1).0[0] as u32;
                 let blurred = weighted_sum / 16;
                 destination.get_pixel_mut(x, y).0[0] = blurred.clamp(u8::MIN as u32, u8::MAX as u32) as u8;
+            }
+        }
+    }
+
+    fn sharpen_inner_pixels(source: &GrayImage, destination: &mut GrayImage) {
+        for y in 1..source.height() - 2 {
+            for x in 1..source.width() - 2 {
+                let weighted_sum = -(source.get_pixel(x - 1, y - 1).0[0] as i32)
+                    - source.get_pixel(x, y - 1).0[0] as i32
+                    - source.get_pixel(x + 1, y - 1).0[0] as i32
+                    - source.get_pixel(x - 1, y).0[0] as i32
+                    + 9 * source.get_pixel(x, y).0[0] as i32
+                    - source.get_pixel(x + 1, y).0[0] as i32
+                    - source.get_pixel(x - 1, y + 1).0[0] as i32
+                    - source.get_pixel(x, y + 1).0[0] as i32
+                    - source.get_pixel(x + 1, y + 1).0[0] as i32;
+                destination.get_pixel_mut(x, y).0[0] = weighted_sum.clamp(u8::MIN as i32, u8::MAX as i32) as u8;
             }
         }
     }

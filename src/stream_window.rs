@@ -29,11 +29,17 @@ pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
     loop {
         let mut frame = get_next_frame(&capturer);
 
+        LedwandDither::histogram_correction(&mut frame);
+
+        let mut orig = frame.clone();
+        LedwandDither::blur(&orig, &mut frame);
+
+        std::mem::swap(&mut frame, &mut orig);
+        LedwandDither::sharpen(&orig, &mut frame);
+
         let cutoff = if options.no_dither {
             LedwandDither::median_brightness(&frame)
         } else {
-            LedwandDither::histogram_correction(&mut frame);
-            LedwandDither::blur(&frame.clone(), &mut frame);
             dither(&mut frame, &BiLevel);
             u8::MAX / 2
         };
