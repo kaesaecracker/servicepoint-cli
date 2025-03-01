@@ -11,6 +11,7 @@ use servicepoint::{Brightness, Connection};
 
 mod brightness;
 mod cli;
+mod image_processing;
 mod ledwand_dither;
 mod pixels;
 mod stream_stdin;

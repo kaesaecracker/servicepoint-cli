@@ -122,6 +122,12 @@ pub struct StreamScreenOptions {
     )]
     pub pointer: bool,
 
+    #[transparent]
+    pub image_processing: ImageProcessingOptions,
+}
+
+#[derive(clap::Parser, std::fmt::Debug, Clone)]
+pub struct ImageProcessingOptions {
     #[arg(long, help = "Disable histogram correction")]
     pub no_hist: bool,
 

@@ -1,5 +1,8 @@
-use crate::cli::StreamScreenOptions;
-use crate::ledwand_dither::*;
+use crate::{
+    cli::{ImageProcessingOptions, StreamScreenOptions},
+    image_processing::ImageProcessingPipeline,
+    ledwand_dither::*,
+};
 use image::{
     imageops::{resize, FilterType},
     DynamicImage, ImageBuffer, Luma, Rgb, Rgba,
@@ -10,45 +13,26 @@ use scap::{
     frame::convert_bgra_to_rgb,
     frame::Frame,
 };
-use servicepoint::{Bitmap, Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH};
+use servicepoint::{
+    Bitmap, Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH,
+    TILE_HEIGHT, TILE_SIZE,
+};
 use std::time::Duration;
 
 pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
     info!("Starting capture with options: {:?}", options);
-
     let capturer = match start_capture(&options) {
         Some(value) => value,
         None => return,
     };
 
+    let pipeline = ImageProcessingPipeline::new(options.image_processing);
+
     info!("now starting to stream images");
     loop {
-        let mut frame = get_next_frame(&capturer);
-
-        if !options.no_hist {
-            histogram_correction(&mut frame);
-        }
-
-        let mut orig = frame.clone();
-
-        if !options.no_blur {
-            blur(&orig, &mut frame);
-            std::mem::swap(&mut frame, &mut orig);
-        }
-
-        if !options.no_sharp {
-            sharpen(&orig, &mut frame);
-            std::mem::swap(&mut frame, &mut orig);
-        }
-
-        let bitmap = if options.no_dither {
-            let cutoff = median_brightness(&orig);
-            let bits = orig.iter().map(move |x| x > &cutoff).collect();
-            Bitmap::from_bitvec(orig.width() as usize, bits)
-        } else {
-            ostromoukhov_dither(orig, u8::MAX / 2)
-        };
-
+        let frame = capturer.get_next_frame().expect("failed to capture frame");
+        let frame = frame_to_image(frame);
+        let bitmap = pipeline.process(frame);
         connection
             .send(Command::BitmapLinearWin(
                 Origin::ZERO,
@@ -57,20 +41,6 @@ pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
             ))
             .expect("failed to send frame to display");
     }
-}
-
-/// returns next frame from the capturer, resized and grayscale
-fn get_next_frame(capturer: &Capturer) -> ImageBuffer<Luma<u8>, Vec<u8>> {
-    let frame = capturer.get_next_frame().expect("failed to capture frame");
-    let frame = frame_to_image(frame);
-    let frame = frame.grayscale().to_luma8();
-
-    resize(
-        &frame,
-        PIXEL_WIDTH as u32,
-        PIXEL_HEIGHT as u32,
-        FilterType::Nearest,
-    )
 }
 
 fn start_capture(options: &StreamScreenOptions) -> Option<Capturer> {
