@@ -53,4 +53,5 @@ fn pixels_image(
             CompressionCode::default(),
         ))
         .expect("failed to send image command");
+    info!("sent image to display");
 }

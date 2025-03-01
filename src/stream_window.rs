@@ -1,5 +1,7 @@
-use crate::cli::{ImageProcessingOptions, StreamScreenOptions};
-use crate::image_processing::ImageProcessingPipeline;
+use crate::{
+    cli::{ImageProcessingOptions, StreamScreenOptions},
+    image_processing::ImageProcessingPipeline,
+};
 use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
 use log::{error, info, warn};
 use scap::{
@@ -7,14 +9,8 @@ use scap::{
     frame::convert_bgra_to_rgb,
     frame::Frame,
 };
-use servicepoint::{
-    Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, TILE_HEIGHT,
-    TILE_SIZE,
-};
+use servicepoint::{Command, CompressionCode, Connection, Origin, FRAME_PACING};
 use std::time::Duration;
-
-const SPACER_HEIGHT: usize = TILE_SIZE / 2;
-const PIXEL_HEIGHT_INCLUDING_SPACERS: usize = SPACER_HEIGHT * (TILE_HEIGHT - 1) + PIXEL_HEIGHT;
 
 pub fn stream_window(
     connection: &Connection,

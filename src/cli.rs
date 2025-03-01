@@ -151,6 +151,9 @@ pub struct ImageProcessingOptions {
         help = "Disable dithering. Brightness will be adjusted so that around half of the pixels are on."
     )]
     pub no_dither: bool,
+
+    #[arg(long, help = "Do not remove the spacers from the image.")]
+    pub no_spacers: bool,
 }
 
 #[derive(clap::Parser, std::fmt::Debug, Clone)]

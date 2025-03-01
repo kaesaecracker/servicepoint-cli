@@ -6,32 +6,57 @@ use image::{
     imageops::{resize, FilterType},
     DynamicImage, ImageBuffer, Luma,
 };
-use servicepoint::{Bitmap, PIXEL_HEIGHT, PIXEL_WIDTH};
+use log::{debug, trace};
+use servicepoint::{Bitmap, Grid, PIXEL_HEIGHT, PIXEL_WIDTH, TILE_HEIGHT, TILE_SIZE};
+use std::time::Instant;
 
+#[derive(Debug)]
 pub struct ImageProcessingPipeline {
     options: ImageProcessingOptions,
 }
 
+const SPACER_HEIGHT: usize = TILE_SIZE / 2;
+const PIXEL_HEIGHT_INCLUDING_SPACERS: usize = SPACER_HEIGHT * (TILE_HEIGHT - 1) + PIXEL_HEIGHT;
+
 impl ImageProcessingPipeline {
     pub fn new(options: ImageProcessingOptions) -> Self {
+        debug!("Creating image pipeline: {:?}", options);
         Self { options }
     }
 
     pub fn process(&self, frame: DynamicImage) -> Bitmap {
-        let frame = Self::resize_grayscale(&frame);
+        let start_time = Instant::now();
+
+        let frame = self.resize_grayscale(frame);
         let frame = self.grayscale_processing(frame);
-        self.grayscale_to_bitmap(frame)
+        let mut result = self.grayscale_to_bitmap(frame);
+
+        if !self.options.no_spacers {
+            result = Self::remove_spacers(result);
+        }
+
+        trace!("image processing took {:?}", start_time.elapsed());
+        result
     }
 
-    fn resize_grayscale(frame: &DynamicImage) -> ImageBuffer<Luma<u8>, Vec<u8>> {
+    fn resize_grayscale(&self, frame: DynamicImage) -> ImageBuffer<Luma<u8>, Vec<u8>> {
+        // TODO: keep aspect ratio
+        // TODO: make it work for non-maximum sizes
+
         let frame = frame.grayscale().to_luma8();
-        let frame = resize(
+
+        let target_height = if self.options.no_spacers {
+            PIXEL_HEIGHT
+        } else {
+            PIXEL_HEIGHT_INCLUDING_SPACERS
+        };
+
+        resize(
             &frame,
             PIXEL_WIDTH as u32,
-            PIXEL_HEIGHT as u32,
+            target_height as u32,
             FilterType::Nearest,
-        );
-        frame
+        )
     }
 
     fn grayscale_processing(
@@ -64,5 +89,24 @@ impl ImageProcessingPipeline {
         } else {
             ostromoukhov_dither(orig, u8::MAX / 2)
         }
+    }
+
+    fn remove_spacers(bitmap: Bitmap) -> Bitmap {
+        let mut result = Bitmap::max_sized();
+
+        let mut source_y = 0;
+        for result_y in 0..result.height() {
+            if result_y != 0 && result_y % TILE_SIZE == 0 {
+                source_y += 4;
+            }
+
+            for x in 0..result.width() {
+                result.set(x, result_y, bitmap.get(x, source_y));
+            }
+
+            source_y += 1;
+        }
+
+        result
     }
 }
