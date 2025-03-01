@@ -54,6 +54,8 @@ Options:
 ### Stream
 
 ```
+Continuously send data to the display
+
 Usage: servicepoint-cli stream <COMMAND>
 
 Commands:
@@ -108,9 +110,27 @@ Commands for manipulating pixels
 Usage: servicepoint-cli pixels <COMMAND>
 
 Commands:
-  off     Reset all pixels to the default (off) state [aliases: r, reset, clear]
-  invert  Invert the state of all pixels [aliases: i]
-  on      Set all pixels to the on state
+  off    Reset all pixels to the default (off) state [aliases: r, reset, clear]
+  flip   Invert the state of all pixels [aliases: f]
+  on     Set all pixels to the on state
+  image  Send an image file (e.g. jpeg or png) to the display. [aliases: i]
+```
+
+#### Image
+
+```
+Send an image file (e.g. jpeg or png) to the display.
+
+Usage: servicepoint-cli pixels image [OPTIONS] <FILE_NAME>
+
+Arguments:
+  <FILE_NAME>  
+
+Options:
+      --no-hist    Disable histogram correction
+      --no-blur    Disable blur
+      --no-sharp   Disable sharpening
+      --no-dither  Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
 ```
 
 ## Contributing

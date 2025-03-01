@@ -1,12 +1,17 @@
-use crate::cli::PixelCommand;
+use crate::cli::{ImageProcessingOptions, PixelCommand, SendImageOptions};
+use crate::image_processing::ImageProcessingPipeline;
 use log::info;
-use servicepoint::{BitVec, Command, CompressionCode, Connection, PIXEL_COUNT};
+use servicepoint::{BitVec, Command, CompressionCode, Connection, Origin, PIXEL_COUNT};
 
 pub(crate) fn pixels(connection: &Connection, pixel_command: PixelCommand) {
     match pixel_command {
         PixelCommand::Off => pixels_off(connection),
-        PixelCommand::Invert => pixels_invert(connection),
+        PixelCommand::Flip => pixels_invert(connection),
         PixelCommand::On => pixels_on(connection),
+        PixelCommand::Image {
+            image_processing_options: processing_options,
+            send_image_options: image_options,
+        } => pixels_image(connection, image_options, processing_options),
     }
 }
 
@@ -31,4 +36,21 @@ pub(crate) fn pixels_off(connection: &Connection) {
         .send(Command::Clear)
         .expect("failed to clear pixels");
     info!("reset pixels");
+}
+
+fn pixels_image(
+    connection: &Connection,
+    options: SendImageOptions,
+    processing_options: ImageProcessingOptions,
+) {
+    let image = image::open(&options.file_name).expect("failed to open image file");
+    let pipeline = ImageProcessingPipeline::new(processing_options);
+    let bitmap = pipeline.process(image);
+    connection
+        .send(Command::BitmapLinearWin(
+            Origin::ZERO,
+            bitmap,
+            CompressionCode::default(),
+        ))
+        .expect("failed to send image command");
 }

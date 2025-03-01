@@ -1,9 +1,11 @@
-use crate::cli::ImageProcessingOptions;
-use crate::ledwand_dither::{
-    blur, histogram_correction, median_brightness, ostromoukhov_dither, sharpen,
+use crate::{
+    cli::ImageProcessingOptions,
+    ledwand_dither::{blur, histogram_correction, median_brightness, ostromoukhov_dither, sharpen},
 };
-use image::imageops::{resize, FilterType};
-use image::{imageops, DynamicImage, ImageBuffer, Luma};
+use image::{
+    imageops::{resize, FilterType},
+    DynamicImage, ImageBuffer, Luma,
+};
 use servicepoint::{Bitmap, PIXEL_HEIGHT, PIXEL_WIDTH};
 
 pub struct ImageProcessingPipeline {
@@ -22,7 +24,7 @@ impl ImageProcessingPipeline {
     }
 
     fn resize_grayscale(frame: &DynamicImage) -> ImageBuffer<Luma<u8>, Vec<u8>> {
-        let frame = imageops::grayscale(&frame);
+        let frame = frame.grayscale().to_luma8();
         let frame = resize(
             &frame,
             PIXEL_WIDTH as u32,
@@ -54,7 +56,7 @@ impl ImageProcessingPipeline {
         orig
     }
 
-    fn grayscale_to_bitmap(&self, mut orig: ImageBuffer<Luma<u8>, Vec<u8>>) -> Bitmap {
+    fn grayscale_to_bitmap(&self, orig: ImageBuffer<Luma<u8>, Vec<u8>>) -> Bitmap {
         if self.options.no_dither {
             let cutoff = median_brightness(&orig);
             let bits = orig.iter().map(move |x| x > &cutoff).collect();

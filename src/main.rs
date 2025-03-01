@@ -38,7 +38,10 @@ pub fn execute_mode(mode: Mode, connection: Connection) {
         Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
         Mode::Stream { stream_command } => match stream_command {
             StreamCommand::Stdin { slow } => stream_stdin(connection, slow),
-            StreamCommand::Screen { options } => stream_window(&connection, options),
+            StreamCommand::Screen {
+                stream_options,
+                image_processing,
+            } => stream_window(&connection, stream_options, image_processing),
         },
     }
 }

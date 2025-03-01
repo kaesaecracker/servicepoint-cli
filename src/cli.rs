@@ -57,10 +57,20 @@ pub enum PixelCommand {
         about = "Reset all pixels to the default (off) state"
     )]
     Off,
-    #[command(visible_alias = "i", about = "Invert the state of all pixels")]
-    Invert,
+    #[command(visible_alias = "f", about = "Invert the state of all pixels")]
+    Flip,
     #[command(about = "Set all pixels to the on state")]
     On,
+    #[command(
+        visible_alias = "i",
+        about = "Send an image file (e.g. jpeg or png) to the display."
+    )]
+    Image {
+        #[command(flatten)]
+        send_image_options: SendImageOptions,
+        #[command(flatten)]
+        image_processing_options: ImageProcessingOptions,
+    },
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
@@ -91,7 +101,7 @@ pub enum Protocol {
 #[derive(clap::Parser, std::fmt::Debug)]
 #[clap(about = "Continuously send data to the display")]
 pub enum StreamCommand {
-    #[clap(
+    #[command(
         about = "Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`"
     )]
     Stdin {
@@ -103,12 +113,14 @@ pub enum StreamCommand {
         )]
         slow: bool,
     },
-    #[clap(about = "Stream the default source to the display. \
+    #[command(about = "Stream the default source to the display. \
         On Linux Wayland, this pops up a screen or window chooser, \
         but it also may directly start streaming your main screen.")]
     Screen {
         #[command(flatten)]
-        options: StreamScreenOptions,
+        stream_options: StreamScreenOptions,
+        #[command(flatten)]
+        image_processing: ImageProcessingOptions,
     },
 }
 
@@ -121,9 +133,6 @@ pub struct StreamScreenOptions {
         help = "Show mouse pointer in video feed"
     )]
     pub pointer: bool,
-
-    #[transparent]
-    pub image_processing: ImageProcessingOptions,
 }
 
 #[derive(clap::Parser, std::fmt::Debug, Clone)]
@@ -142,4 +151,10 @@ pub struct ImageProcessingOptions {
         help = "Disable dithering. Brightness will be adjusted so that around half of the pixels are on."
     )]
     pub no_dither: bool,
+}
+
+#[derive(clap::Parser, std::fmt::Debug, Clone)]
+pub struct SendImageOptions {
+    #[arg()]
+    pub file_name: String,
 }

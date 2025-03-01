@@ -1,12 +1,6 @@
-use crate::{
-    cli::{ImageProcessingOptions, StreamScreenOptions},
-    image_processing::ImageProcessingPipeline,
-    ledwand_dither::*,
-};
-use image::{
-    imageops::{resize, FilterType},
-    DynamicImage, ImageBuffer, Luma, Rgb, Rgba,
-};
+use crate::cli::{ImageProcessingOptions, StreamScreenOptions};
+use crate::image_processing::ImageProcessingPipeline;
+use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
 use log::{error, info, warn};
 use scap::{
     capturer::{Capturer, Options},
@@ -14,19 +8,26 @@ use scap::{
     frame::Frame,
 };
 use servicepoint::{
-    Bitmap, Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH,
-    TILE_HEIGHT, TILE_SIZE,
+    Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, TILE_HEIGHT,
+    TILE_SIZE,
 };
 use std::time::Duration;
 
-pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
+const SPACER_HEIGHT: usize = TILE_SIZE / 2;
+const PIXEL_HEIGHT_INCLUDING_SPACERS: usize = SPACER_HEIGHT * (TILE_HEIGHT - 1) + PIXEL_HEIGHT;
+
+pub fn stream_window(
+    connection: &Connection,
+    options: StreamScreenOptions,
+    processing_options: ImageProcessingOptions,
+) {
     info!("Starting capture with options: {:?}", options);
     let capturer = match start_capture(&options) {
         Some(value) => value,
         None => return,
     };
 
-    let pipeline = ImageProcessingPipeline::new(options.image_processing);
+    let pipeline = ImageProcessingPipeline::new(processing_options);
 
     info!("now starting to stream images");
     loop {
@@ -57,10 +58,11 @@ fn start_capture(options: &StreamScreenOptions) -> Option<Capturer> {
         }
     }
 
+    // all options are more like a suggestion
     let mut capturer = Capturer::build(Options {
         fps: FRAME_PACING.div_duration_f32(Duration::from_secs(1)) as u32,
         show_cursor: options.pointer,
-        output_type: scap::frame::FrameType::BGR0, // this is more like a suggestion
+        output_type: scap::frame::FrameType::BGR0,
         ..Default::default()
     })
     .expect("failed to create screen capture");
