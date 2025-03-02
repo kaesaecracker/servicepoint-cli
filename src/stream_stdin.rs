@@ -63,9 +63,9 @@ impl App<'_> {
 
     fn send_mirror(&self) {
         self.connection
-            .send(Command::Cp437Data(
+            .send(Command::Utf8Data(
                 Origin::ZERO,
-                Cp437Grid::from(&self.mirror),
+                self.mirror.clone(),
             ))
             .expect("couldn't send screen to display");
     }
