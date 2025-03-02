@@ -174,11 +174,11 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
     for y in 0..height as usize {
         let start = y * width as usize;
         if y % 2 == 0 {
-            for x in 0..width as usize {
+            for x in start..start + width as usize {
                 ostromoukhov_dither_pixel(
                     &mut source,
                     &mut destination,
-                    start + x,
+                    x,
                     width as usize,
                     y == (height - 1) as usize,
                     1,
@@ -186,11 +186,11 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
                 );
             }
         } else {
-            for x in (0..width as usize).rev() {
+            for x in (start..start + width as usize).rev() {
                 ostromoukhov_dither_pixel(
                     &mut source,
                     &mut destination,
-                    start + x,
+                    x,
                     width as usize,
                     y == (height - 1) as usize,
                     -1,
@@ -213,17 +213,9 @@ fn ostromoukhov_dither_pixel(
     direction: isize,
     bias: u8,
 ) {
-    let old_pixel = source[position];
-
-    let destination_value = old_pixel > bias;
+    let (destination_value, error) = gray_to_bit(source[position], bias);
     destination.set(position, destination_value);
-
-    let error = if destination_value {
-        255 - old_pixel
-    } else {
-        old_pixel
-    };
-
+    
     let mut diffuse = |to: usize, mat: i16| {
         let diffuse_value = source[to] as i16 + mat;
         source[to] = diffuse_value.clamp(u8::MIN.into(), u8::MAX.into()) as u8;
@@ -243,6 +235,16 @@ fn ostromoukhov_dither_pixel(
         );
         diffuse(((position + width) as isize) as usize, lookup[2]);
     }
+}
+
+fn gray_to_bit(old_pixel: u8, bias: u8) -> (bool, u8) {
+    let destination_value = old_pixel > bias;
+    let error = if destination_value {
+        255 - old_pixel
+    } else {
+        old_pixel
+    };
+    (destination_value, error)
 }
 
 const ERROR_DIFFUSION_MATRIX: [[i16; 3]; 256] = [

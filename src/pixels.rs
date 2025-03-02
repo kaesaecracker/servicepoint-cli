@@ -44,7 +44,7 @@ fn pixels_image(
     processing_options: ImageProcessingOptions,
 ) {
     let image = image::open(&options.file_name).expect("failed to open image file");
-    let pipeline = ImageProcessingPipeline::new(processing_options);
+    let mut pipeline = ImageProcessingPipeline::new(processing_options);
     let bitmap = pipeline.process(image);
     connection
         .send(Command::BitmapLinearWin(
