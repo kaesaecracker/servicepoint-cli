@@ -1,5 +1,8 @@
-use crate::cli::{ImageProcessingOptions, PixelCommand, SendImageOptions};
-use crate::image_processing::ImageProcessingPipeline;
+use crate::{
+    image_processing::ImageProcessingPipeline,
+    cli::{ImageProcessingOptions, PixelCommand, SendImageOptions},
+    stream_window::stream_window
+};
 use log::info;
 use servicepoint::{BitVec, Command, CompressionCode, Connection, Origin, PIXEL_COUNT};
 
@@ -12,6 +15,10 @@ pub(crate) fn pixels(connection: &Connection, pixel_command: PixelCommand) {
             image_processing_options: processing_options,
             send_image_options: image_options,
         } => pixels_image(connection, image_options, processing_options),
+        PixelCommand::Screen {
+            stream_options,
+            image_processing,
+        } => stream_window(connection, stream_options, image_processing),
     }
 }
 

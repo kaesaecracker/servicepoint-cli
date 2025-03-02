@@ -40,10 +40,10 @@ pub enum Mode {
         #[clap(subcommand)]
         brightness_command: BrightnessCommand,
     },
-    #[command(visible_alias = "s")]
-    Stream {
+    #[command(visible_alias = "t")]
+    Text {
         #[clap(subcommand)]
-        stream_command: StreamCommand,
+        text_command: TextCommand,
     },
 }
 
@@ -70,6 +70,18 @@ pub enum PixelCommand {
         send_image_options: SendImageOptions,
         #[command(flatten)]
         image_processing_options: ImageProcessingOptions,
+    },
+    #[command(
+        visible_alias = "s",
+        about = "Stream the default screen capture source to the display. \
+        On Linux Wayland, this pops up a screen or window chooser, \
+        but it also may directly start streaming your main screen."
+    )]
+    Screen {
+        #[command(flatten)]
+        stream_options: StreamScreenOptions,
+        #[command(flatten)]
+        image_processing: ImageProcessingOptions,
     },
 }
 
@@ -99,8 +111,8 @@ pub enum Protocol {
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
-#[clap(about = "Continuously send data to the display")]
-pub enum StreamCommand {
+#[clap(about = "Commands for sending text to the screen")]
+pub enum TextCommand {
     #[command(
         about = "Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`"
     )]
@@ -112,15 +124,6 @@ pub enum StreamCommand {
             help = "Wait for a short amount of time before sending the next line"
         )]
         slow: bool,
-    },
-    #[command(about = "Stream the default source to the display. \
-        On Linux Wayland, this pops up a screen or window chooser, \
-        but it also may directly start streaming your main screen.")]
-    Screen {
-        #[command(flatten)]
-        stream_options: StreamScreenOptions,
-        #[command(flatten)]
-        image_processing: ImageProcessingOptions,
     },
 }
 

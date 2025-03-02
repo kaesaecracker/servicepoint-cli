@@ -40,7 +40,7 @@ Commands:
   reset-everything  Reset both pixels and brightness [aliases: r]
   pixels            Commands for manipulating pixels [aliases: p]
   brightness        Commands for manipulating the brightness [aliases: b]
-  stream            Continuously send data to the display [aliases: s]
+  text              Commands for sending text to the screen [aliases: t]
   help              Print this message or the help of the given subcommand(s)
 
 Options:
@@ -51,59 +51,6 @@ Options:
   -V, --version                    Print version
 ```
 
-### Stream
-
-```
-Continuously send data to the display
-
-Usage: servicepoint-cli stream <COMMAND>
-
-Commands:
-  stdin   Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`
-  screen  Stream the default source to the display. On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen.
-```
-
-#### Screen
-
-```
-Stream the default source to the display. On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen.
-
-Usage: servicepoint-cli stream screen [OPTIONS]
-
-Options:
-  -p, --pointer     Show mouse pointer in video feed
-      --no-hist     Disable histogram correction
-      --no-blur     Disable blur
-      --no-sharp    Disable sharpening
-      --no-dither   Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
-      --no-spacers  Do not remove the spacers from the image.
-      --no-aspect   Do not keep aspect ratio when resizing.
-```
-
-#### Stdin
-
-```
-Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`
-
-Usage: servicepoint-cli stream stdin [OPTIONS]
-
-Options:
-  -s, --slow  Wait for a short amount of time before sending the next line
-```
-
-### Brightness
-
-```
-Commands for manipulating the brightness
-
-Usage: servicepoint-cli brightness <COMMAND>
-
-Commands:
-  max   Reset brightness to the default (max) level [aliases: r, reset]
-  set   Set one brightness for the whole screen [aliases: s]
-  min   Set brightness to lowest possible level.
-```
-
 ### Pixels
 
 ```
@@ -112,10 +59,11 @@ Commands for manipulating pixels
 Usage: servicepoint-cli pixels <COMMAND>
 
 Commands:
-  off    Reset all pixels to the default (off) state [aliases: r, reset, clear]
-  flip   Invert the state of all pixels [aliases: f]
-  on     Set all pixels to the on state
-  image  Send an image file (e.g. jpeg or png) to the display. [aliases: i]
+  off     Reset all pixels to the default (off) state [aliases: r, reset, clear]
+  flip    Invert the state of all pixels [aliases: f]
+  on      Set all pixels to the on state
+  image   Send an image file (e.g. jpeg or png) to the display. [aliases: i]
+  screen  Stream the default screen capture source to the display. On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen. [aliases: s]
 ```
 
 #### Image
@@ -136,6 +84,59 @@ Options:
       --no-spacers  Do not remove the spacers from the image.
       --no-aspect   Do not keep aspect ratio when resizing.
 ```
+
+#### Screen
+
+```
+Stream the default screen capture source to the display. On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen.
+
+Usage: servicepoint-cli pixels screen [OPTIONS]
+
+Options:
+  -p, --pointer     Show mouse pointer in video feed
+      --no-hist     Disable histogram correction
+      --no-blur     Disable blur
+      --no-sharp    Disable sharpening
+      --no-dither   Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
+      --no-spacers  Do not remove the spacers from the image.
+      --no-aspect   Do not keep aspect ratio when resizing.
+```
+
+### Brightness
+
+```
+Commands for manipulating the brightness
+
+Usage: servicepoint-cli brightness <COMMAND>
+
+Commands:
+  max   Reset brightness to the default (max) level [aliases: r, reset]
+  set   Set one brightness for the whole screen [aliases: s]
+  min   Set brightness to lowest possible level.
+```
+
+### Text
+
+```
+Commands for sending text to the screen
+
+Usage: servicepoint-cli text <COMMAND>
+
+Commands:
+  stdin  Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`
+```
+
+#### Stdin
+
+```
+Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`
+
+Usage: servicepoint-cli stream stdin [OPTIONS]
+
+Options:
+  -s, --slow  Wait for a short amount of time before sending the next line
+```
+
 
 ## Contributing
 

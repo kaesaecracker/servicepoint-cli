@@ -1,9 +1,8 @@
 use crate::{
     brightness::{brightness, brightness_set},
-    cli::{Cli, Mode, Protocol, StreamCommand},
+    cli::{Cli, Mode, Protocol},
     pixels::{pixels, pixels_off},
-    stream_stdin::stream_stdin,
-    stream_window::stream_window,
+    text::text
 };
 use clap::Parser;
 use log::debug;
@@ -16,6 +15,7 @@ mod ledwand_dither;
 mod pixels;
 mod stream_stdin;
 mod stream_window;
+mod text;
 
 fn main() {
     let cli = Cli::parse();
@@ -36,13 +36,7 @@ pub fn execute_mode(mode: Mode, connection: Connection) {
         }
         Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
         Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
-        Mode::Stream { stream_command } => match stream_command {
-            StreamCommand::Stdin { slow } => stream_stdin(connection, slow),
-            StreamCommand::Screen {
-                stream_options,
-                image_processing,
-            } => stream_window(&connection, stream_options, image_processing),
-        },
+        Mode::Text { text_command} => text(&connection, text_command),
     }
 }
 
