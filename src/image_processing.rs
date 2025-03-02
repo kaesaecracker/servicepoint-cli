@@ -12,7 +12,7 @@ use std::{default::Default, time::Instant};
 pub struct ImageProcessingPipeline {
     options: ImageProcessingOptions,
     resizer: Resizer,
-    render_size: (usize, usize),
+    render_size: (u32, u32),
 }
 
 const SPACER_HEIGHT: usize = TILE_SIZE / 2;
@@ -21,16 +21,17 @@ impl ImageProcessingPipeline {
     pub fn new(options: ImageProcessingOptions) -> Self {
         debug!("Creating image pipeline: {:?}", options);
 
-        let spacers_height = if options.no_spacers {
-            0
-        } else {
-            SPACER_HEIGHT * (TILE_HEIGHT - 1)
-        };
+        let height = PIXEL_HEIGHT
+            + if options.no_spacers {
+                0
+            } else {
+                SPACER_HEIGHT * (TILE_HEIGHT - 1)
+            };
 
         Self {
             options,
             resizer: Resizer::new(),
-            render_size: (PIXEL_WIDTH, PIXEL_HEIGHT + spacers_height),
+            render_size: (PIXEL_WIDTH as u32, height as u32),
         }
     }
 
@@ -52,7 +53,11 @@ impl ImageProcessingPipeline {
     fn resize_grayscale(&mut self, frame: DynamicImage) -> GrayImage {
         let start_time = Instant::now();
 
-        let (scaled_width, scaled_height) = self.fit_size((frame.width(), frame.height()));
+        let (scaled_width, scaled_height) = if self.options.no_aspect {
+            self.render_size
+        } else {
+            self.calc_scaled_size_keep_aspect((frame.width(), frame.height()))
+        };
         let mut dst_image = DynamicImage::new(scaled_width, scaled_height, frame.color());
 
         self.resizer
@@ -106,20 +111,13 @@ impl ImageProcessingPipeline {
     fn remove_spacers(source: Bitmap) -> Bitmap {
         let start_time = Instant::now();
 
-        let full_tile_rows_with_spacers = source.height() / (TILE_SIZE + SPACER_HEIGHT);
-        let remaining_pixel_rows = source.height() % (TILE_SIZE + SPACER_HEIGHT);
-        let total_spacer_height = full_tile_rows_with_spacers * SPACER_HEIGHT
-            + remaining_pixel_rows.saturating_sub(TILE_SIZE);
-        let height_without_spacers = source.height() - total_spacer_height;
-        trace!(
-            "spacers take up {total_spacer_height}, resulting in height {height_without_spacers}"
-        );
-
-        let mut result = Bitmap::new(source.width(), height_without_spacers);
+        let width = source.width();
+        let result_height = Self::calc_height_without_spacers(source.height());
+        let mut result = Bitmap::new(width, result_height);
 
         let mut source_y = 0;
-        for result_y in 0..result.height() {
-            for x in 0..result.width() {
+        for result_y in 0..result_height {
+            for x in 0..width {
                 result.set(x, result_y, source.get(x, source_y));
             }
 
@@ -133,10 +131,22 @@ impl ImageProcessingPipeline {
         result
     }
 
-    fn fit_size(&self, source: (u32, u32)) -> (u32, u32) {
+    fn calc_height_without_spacers(height: usize) -> usize {
+        let full_tile_rows_with_spacers = height / (TILE_SIZE + SPACER_HEIGHT);
+        let remaining_pixel_rows = height % (TILE_SIZE + SPACER_HEIGHT);
+        let total_spacer_height = full_tile_rows_with_spacers * SPACER_HEIGHT
+            + remaining_pixel_rows.saturating_sub(TILE_SIZE);
+        let height_without_spacers = height - total_spacer_height;
+        trace!(
+            "spacers take up {total_spacer_height}, resulting in final height {height_without_spacers}"
+        );
+        height_without_spacers
+    }
+
+    fn calc_scaled_size_keep_aspect(&self, source: (u32, u32)) -> (u32, u32) {
         let (source_width, source_height) = source;
         let (target_width, target_height) = self.render_size;
-        debug_assert_eq!(target_width % TILE_SIZE, 0);
+        debug_assert_eq!(target_width % TILE_SIZE as u32, 0);
 
         let width_scale = target_width as f32 / source_width as f32;
         let height_scale = target_height as f32 / source_height as f32;

@@ -215,7 +215,7 @@ fn ostromoukhov_dither_pixel(
 ) {
     let (destination_value, error) = gray_to_bit(source[position], bias);
     destination.set(position, destination_value);
-    
+
     let mut diffuse = |to: usize, mat: i16| {
         let diffuse_value = source[to] as i16 + mat;
         source[to] = diffuse_value.clamp(u8::MIN.into(), u8::MAX.into()) as u8;

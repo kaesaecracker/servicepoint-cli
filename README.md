@@ -71,11 +71,13 @@ Stream the default source to the display. On Linux Wayland, this pops up a scree
 Usage: servicepoint-cli stream screen [OPTIONS]
 
 Options:
-  -p, --pointer    Show mouse pointer in video feed
-      --no-hist    Disable histogram correction
-      --no-blur    Disable blur
-      --no-sharp   Disable sharpening
-      --no-dither  Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
+  -p, --pointer     Show mouse pointer in video feed
+      --no-hist     Disable histogram correction
+      --no-blur     Disable blur
+      --no-sharp    Disable sharpening
+      --no-dither   Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
+      --no-spacers  Do not remove the spacers from the image.
+      --no-aspect   Do not keep aspect ratio when resizing.
 ```
 
 #### Stdin
@@ -127,10 +129,12 @@ Arguments:
   <FILE_NAME>  
 
 Options:
-      --no-hist    Disable histogram correction
-      --no-blur    Disable blur
-      --no-sharp   Disable sharpening
-      --no-dither  Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
+      --no-hist     Disable histogram correction
+      --no-blur     Disable blur
+      --no-sharp    Disable sharpening
+      --no-dither   Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
+      --no-spacers  Do not remove the spacers from the image.
+      --no-aspect   Do not keep aspect ratio when resizing.
 ```
 
 ## Contributing

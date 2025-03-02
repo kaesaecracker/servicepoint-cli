@@ -154,6 +154,9 @@ pub struct ImageProcessingOptions {
 
     #[arg(long, help = "Do not remove the spacers from the image.")]
     pub no_spacers: bool,
+
+    #[arg(long, help = "Do not keep aspect ratio when resizing.")]
+    pub no_aspect: bool,
 }
 
 #[derive(clap::Parser, std::fmt::Debug, Clone)]
