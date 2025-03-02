@@ -103,6 +103,7 @@
                   cargo-expand
                 ];
               })
+              pkgs.cargo-flamegraph
             ];
             LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (builtins.concatMap (d: d.buildInputs) inputsFrom)}";
             RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";

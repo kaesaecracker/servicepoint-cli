@@ -1,12 +1,21 @@
-use crate::cli::{Cli, Protocol};
+use crate::{
+    brightness::{brightness, brightness_set},
+    cli::{Cli, Mode, Protocol},
+    pixels::{pixels, pixels_off},
+    text::text
+};
 use clap::Parser;
 use log::debug;
-use servicepoint::Connection;
+use servicepoint::{Brightness, Connection};
 
+mod brightness;
 mod cli;
-mod execute;
+mod image_processing;
+mod ledwand_dither;
+mod pixels;
 mod stream_stdin;
 mod stream_window;
+mod text;
 
 fn main() {
     let cli = Cli::parse();
@@ -16,7 +25,19 @@ fn main() {
     let connection = make_connection(cli.destination, cli.transport);
     debug!("connection established: {:#?}", connection);
 
-    execute::execute_mode(cli.command, connection);
+    execute_mode(cli.command, connection);
+}
+
+pub fn execute_mode(mode: Mode, connection: Connection) {
+    match mode {
+        Mode::ResetEverything => {
+            brightness_set(&connection, Brightness::MAX);
+            pixels_off(&connection);
+        }
+        Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
+        Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
+        Mode::Text { text_command} => text(&connection, text_command),
+    }
 }
 
 fn make_connection(destination: String, transport: Protocol) -> Connection {

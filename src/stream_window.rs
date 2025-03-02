@@ -1,61 +1,50 @@
-use crate::cli::StreamScreenOptions;
-use image::{
-    imageops::{dither, resize, BiLevel, FilterType},
-    DynamicImage, ImageBuffer, Luma, Rgb, Rgba,
+use crate::{
+    cli::{ImageProcessingOptions, StreamScreenOptions},
+    image_processing::ImageProcessingPipeline,
 };
-use log::{error, info, warn};
+use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
+use log::{debug, error, info, trace, warn};
 use scap::{
     capturer::{Capturer, Options},
     frame::convert_bgra_to_rgb,
     frame::Frame,
 };
-use servicepoint::{
-    Bitmap, Command, CompressionCode, Connection, Origin, FRAME_PACING, PIXEL_HEIGHT, PIXEL_WIDTH,
-};
-use std::time::Duration;
+use servicepoint::{Command, CompressionCode, Connection, Origin, FRAME_PACING};
+use std::time::{Duration, Instant};
 
-pub fn stream_window(connection: &Connection, options: StreamScreenOptions) {
+pub fn stream_window(
+    connection: &Connection,
+    options: StreamScreenOptions,
+    processing_options: ImageProcessingOptions,
+) {
     info!("Starting capture with options: {:?}", options);
-    warn!("this implementation does not drop any frames - set a lower fps or disable dithering if your computer cannot keep up.");
-
     let capturer = match start_capture(&options) {
         Some(value) => value,
         None => return,
     };
 
-    let mut bitmap = Bitmap::new(PIXEL_WIDTH, PIXEL_HEIGHT);
+    let mut pipeline = ImageProcessingPipeline::new(processing_options);
+
     info!("now starting to stream images");
     loop {
-        let frame = get_next_frame(&capturer, options.no_dither);
-        for (mut dest, src) in bitmap.iter_mut().zip(frame.pixels()) {
-            *dest = src.0[0] > u8::MAX / 2;
-        }
+        let start = Instant::now();
+
+        let frame = capture_frame(&capturer);
+        let frame = frame_to_image(frame);
+        let bitmap = pipeline.process(frame);
+
+        trace!("bitmap ready to send in: {:?}", start.elapsed());
 
         connection
             .send(Command::BitmapLinearWin(
                 Origin::ZERO,
                 bitmap.clone(),
-                CompressionCode::Uncompressed,
+                CompressionCode::default(),
             ))
             .expect("failed to send frame to display");
-    }
-}
 
-fn get_next_frame(capturer: &Capturer, no_dither: bool) -> ImageBuffer<Luma<u8>, Vec<u8>> {
-    let frame = capturer.get_next_frame().expect("failed to capture frame");
-    let frame = frame_to_image(frame);
-    let frame = frame.grayscale().to_luma8();
-    let mut frame = resize(
-        &frame,
-        PIXEL_WIDTH as u32,
-        PIXEL_HEIGHT as u32,
-        FilterType::Nearest,
-    );
-
-    if !no_dither {
-        dither(&mut frame, &BiLevel);
+        debug!("frame time: {:?}", start.elapsed());
     }
-    frame
 }
 
 fn start_capture(options: &StreamScreenOptions) -> Option<Capturer> {
@@ -72,10 +61,11 @@ fn start_capture(options: &StreamScreenOptions) -> Option<Capturer> {
         }
     }
 
+    // all options are more like a suggestion
     let mut capturer = Capturer::build(Options {
         fps: FRAME_PACING.div_duration_f32(Duration::from_secs(1)) as u32,
         show_cursor: options.pointer,
-        output_type: scap::frame::FrameType::BGR0, // this is more like a suggestion
+        output_type: scap::frame::FrameType::BGR0,
         ..Default::default()
     })
     .expect("failed to create screen capture");
@@ -83,8 +73,16 @@ fn start_capture(options: &StreamScreenOptions) -> Option<Capturer> {
     Some(capturer)
 }
 
+fn capture_frame(capturer: &Capturer) -> Frame {
+    let start_time = Instant::now();
+    let result = capturer.get_next_frame().expect("failed to capture frame");
+    trace!("capture took: {:?}", start_time.elapsed());
+    result
+}
+
 fn frame_to_image(frame: Frame) -> DynamicImage {
-    match frame {
+    let start_time = Instant::now();
+    let result = match frame {
         Frame::BGRx(frame) => bgrx_to_rgb(frame.width, frame.height, frame.data),
         Frame::RGBx(frame) => DynamicImage::from(
             ImageBuffer::<Rgba<_>, _>::from_raw(
@@ -101,7 +99,9 @@ fn frame_to_image(frame: Frame) -> DynamicImage {
         ),
         Frame::BGRA(frame) => bgrx_to_rgb(frame.width, frame.height, frame.data),
         Frame::YUVFrame(_) | Frame::XBGR(_) => panic!("unsupported frame format"),
-    }
+    };
+    trace!("conversion to image took: {:?}", start_time.elapsed());
+    result
 }
 
 fn bgrx_to_rgb(width: i32, height: i32, data: Vec<u8>) -> DynamicImage {

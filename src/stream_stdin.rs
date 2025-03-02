@@ -2,7 +2,7 @@ use log::warn;
 use servicepoint::*;
 use std::thread::sleep;
 
-pub(crate) fn stream_stdin(connection: Connection, slow: bool) {
+pub(crate) fn stream_stdin(connection: &Connection, slow: bool) {
     warn!("This mode will break when using multi-byte characters and does not support ANSI escape sequences yet.");
     let mut app = App {
         connection,
@@ -13,14 +13,14 @@ pub(crate) fn stream_stdin(connection: Connection, slow: bool) {
     app.run()
 }
 
-struct App {
-    connection: Connection,
+struct App<'t> {
+    connection: &'t Connection,
     mirror: CharGrid,
     y: usize,
     slow: bool,
 }
 
-impl App {
+impl App<'_> {
     fn run(&mut self) {
         self.connection
             .send(Command::Clear)
@@ -63,15 +63,16 @@ impl App {
 
     fn send_mirror(&self) {
         self.connection
-            .send(Command::Cp437Data(
+            .send(Command::Utf8Data(
                 Origin::ZERO,
-                Cp437Grid::from(&self.mirror),
+                self.mirror.clone(),
             ))
             .expect("couldn't send screen to display");
     }
 
     fn single_line(&mut self, line: &str) {
         let mut line_grid = CharGrid::new(TILE_WIDTH, 1);
+        line_grid.fill(' ');
         Self::line_onto_grid(&mut line_grid, 0, line);
         Self::line_onto_grid(&mut self.mirror, self.y, line);
         self.connection
