@@ -35,6 +35,7 @@ impl ImageProcessingPipeline {
         }
     }
 
+    #[must_use]
     pub fn process(&mut self, frame: DynamicImage) -> Bitmap {
         let start_time = Instant::now();
 

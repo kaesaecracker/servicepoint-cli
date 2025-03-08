@@ -75,6 +75,16 @@ pub enum PixelCommand {
         image_processing_options: ImageProcessingOptions,
     },
     #[command(
+        visible_alias = "v",
+        about = "Stream a video file (e.g. mp4) to the display."
+    )]
+    Video {
+        #[command(flatten)]
+        send_image_options: SendImageOptions,
+        #[command(flatten)]
+        image_processing_options: ImageProcessingOptions,
+    },
+    #[command(
         visible_alias = "s",
         about = "Stream the default screen capture source to the display. \
         On Linux Wayland, this pops up a screen or window chooser, \

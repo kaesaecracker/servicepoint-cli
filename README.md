@@ -69,6 +69,7 @@ Commands:
   flip    Invert the state of all pixels [aliases: f]
   on      Set all pixels to the on state
   image   Send an image file (e.g. jpeg or png) to the display. [aliases: i]
+  video   Stream a video file (e.g. mp4) to the display. [aliases: v]
   screen  Stream the default screen capture source to the display. On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen. [aliases: s]
 ```
 
@@ -78,6 +79,25 @@ Commands:
 Send an image file (e.g. jpeg or png) to the display.
 
 Usage: servicepoint-cli pixels image [OPTIONS] <FILE_NAME>
+
+Arguments:
+  <FILE_NAME>  
+
+Options:
+      --no-hist     Disable histogram correction
+      --no-blur     Disable blur
+      --no-sharp    Disable sharpening
+      --no-dither   Disable dithering. Brightness will be adjusted so that around half of the pixels are on.
+      --no-spacers  Do not remove the spacers from the image.
+      --no-aspect   Do not keep aspect ratio when resizing.
+```
+
+#### Video file
+
+```text
+Stream a video file (e.g. mp4) to the display.
+
+Usage: servicepoint-cli pixels video [OPTIONS] <FILE_NAME>
 
 Arguments:
   <FILE_NAME>  

@@ -20,6 +20,7 @@ scap = "0.0.8"
 image = "0.25.5"
 fast_image_resize = { version = "5.1", features = ["image"] }
 tungstenite = "0.26"
+ffmpeg-next = "7.1.0"
 
 [dependencies.servicepoint]
 package = "servicepoint"
