@@ -100,7 +100,7 @@ impl ImageProcessingPipeline {
         let result = if self.options.no_dither {
             let cutoff = median_brightness(&orig);
             let bits = orig.iter().map(move |x| x > &cutoff).collect();
-            Bitmap::from_bitvec(orig.width() as usize, bits)
+            Bitmap::from_bitvec(orig.width() as usize, bits).unwrap()
         } else {
             ostromoukhov_dither(orig, u8::MAX / 2)
         };
@@ -113,7 +113,7 @@ impl ImageProcessingPipeline {
 
         let width = source.width();
         let result_height = Self::calc_height_without_spacers(source.height());
-        let mut result = Bitmap::new(width, result_height);
+        let mut result = Bitmap::new(width, result_height).unwrap();
 
         let mut source_y = 0;
         for result_y in 0..result_height {

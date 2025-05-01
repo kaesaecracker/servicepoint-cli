@@ -1,8 +1,8 @@
-use crate::cli::BrightnessCommand;
+use crate::{cli::BrightnessCommand, transport::Transport};
 use log::info;
-use servicepoint::{Brightness, Command, Connection};
+use servicepoint::{Brightness, GlobalBrightnessCommand};
 
-pub(crate) fn brightness(connection: &Connection, brightness_command: BrightnessCommand) {
+pub(crate) fn brightness(connection: &Transport, brightness_command: BrightnessCommand) {
     match brightness_command {
         BrightnessCommand::Max => brightness_set(connection, Brightness::MAX),
         BrightnessCommand::Min => brightness_set(connection, Brightness::MIN),
@@ -12,9 +12,9 @@ pub(crate) fn brightness(connection: &Connection, brightness_command: Brightness
     }
 }
 
-pub(crate) fn brightness_set(connection: &Connection, brightness: Brightness) {
+pub(crate) fn brightness_set(connection: &Transport, brightness: Brightness) {
     connection
-        .send(Command::Brightness(brightness))
+        .send_command(GlobalBrightnessCommand::from(brightness))
         .expect("Failed to set brightness");
     info!("set brightness to {brightness:?}");
 }

@@ -1,7 +1,7 @@
 //! Based on https://github.com/WarkerAnhaltRanger/CCCB_Ledwand
 
 use image::GrayImage;
-use servicepoint::{BitVec, Bitmap, PIXEL_HEIGHT};
+use servicepoint::{Bitmap, DisplayBitVec, PIXEL_HEIGHT};
 
 type GrayHistogram = [usize; 256];
 
@@ -169,7 +169,7 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
     assert_eq!(width % 8, 0);
 
     let mut source = source.into_raw();
-    let mut destination = BitVec::repeat(false, source.len());
+    let mut destination = DisplayBitVec::repeat(false, source.len());
 
     for y in 0..height as usize {
         let start = y * width as usize;
@@ -200,13 +200,13 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
         }
     }
 
-    Bitmap::from_bitvec(width as usize, destination)
+    Bitmap::from_bitvec(width as usize, destination).unwrap()
 }
 
 #[inline]
 fn ostromoukhov_dither_pixel(
     source: &mut [u8],
-    destination: &mut BitVec,
+    destination: &mut DisplayBitVec,
     position: usize,
     width: usize,
     last_row: bool,

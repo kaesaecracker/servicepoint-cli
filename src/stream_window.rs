@@ -1,6 +1,7 @@
 use crate::{
     cli::{ImageProcessingOptions, StreamScreenOptions},
     image_processing::ImageProcessingPipeline,
+    transport::Transport,
 };
 use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
 use log::{debug, error, info, trace, warn};
@@ -9,11 +10,11 @@ use scap::{
     frame::convert_bgra_to_rgb,
     frame::Frame,
 };
-use servicepoint::{Command, CompressionCode, Connection, Origin, FRAME_PACING};
+use servicepoint::{BitmapCommand, CompressionCode, Origin, FRAME_PACING};
 use std::time::{Duration, Instant};
 
 pub fn stream_window(
-    connection: &Connection,
+    connection: &Transport,
     options: StreamScreenOptions,
     processing_options: ImageProcessingOptions,
 ) {
@@ -36,11 +37,11 @@ pub fn stream_window(
         trace!("bitmap ready to send in: {:?}", start.elapsed());
 
         connection
-            .send(Command::BitmapLinearWin(
-                Origin::ZERO,
-                bitmap.clone(),
-                CompressionCode::default(),
-            ))
+            .send_command(BitmapCommand {
+                origin: Origin::ZERO,
+                bitmap: bitmap.clone(),
+                compression: CompressionCode::default(),
+            })
             .expect("failed to send frame to display");
 
         debug!("frame time: {:?}", start.elapsed());

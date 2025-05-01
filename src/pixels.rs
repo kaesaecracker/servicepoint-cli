@@ -1,12 +1,16 @@
 use crate::{
-    image_processing::ImageProcessingPipeline,
     cli::{ImageProcessingOptions, PixelCommand, SendImageOptions},
-    stream_window::stream_window
+    image_processing::ImageProcessingPipeline,
+    stream_window::stream_window,
+    transport::Transport,
 };
 use log::info;
-use servicepoint::{BitVec, Command, CompressionCode, Connection, Origin, PIXEL_COUNT};
+use servicepoint::{
+    BinaryOperation, BitVecCommand, BitmapCommand, ClearCommand, CompressionCode, DisplayBitVec,
+    Origin, PIXEL_COUNT,
+};
 
-pub(crate) fn pixels(connection: &Connection, pixel_command: PixelCommand) {
+pub(crate) fn pixels(connection: &Transport, pixel_command: PixelCommand) {
     match pixel_command {
         PixelCommand::Off => pixels_off(connection),
         PixelCommand::Flip => pixels_invert(connection),
@@ -22,31 +26,43 @@ pub(crate) fn pixels(connection: &Connection, pixel_command: PixelCommand) {
     }
 }
 
-fn pixels_on(connection: &Connection) {
-    let mask = BitVec::repeat(true, PIXEL_COUNT);
+fn pixels_on(connection: &Transport) {
+    let mask = DisplayBitVec::repeat(true, PIXEL_COUNT);
+    let command = BitVecCommand {
+        offset: 0,
+        bitvec: mask,
+        compression: CompressionCode::Lzma,
+        operation: BinaryOperation::Overwrite,
+    };
     connection
-        .send(Command::BitmapLinear(0, mask, CompressionCode::Lzma))
+        .send_command(command)
         .expect("could not send command");
     info!("turned on all pixels")
 }
 
-fn pixels_invert(connection: &Connection) {
-    let mask = BitVec::repeat(true, PIXEL_COUNT);
+fn pixels_invert(connection: &Transport) {
+    let mask = DisplayBitVec::repeat(true, PIXEL_COUNT);
+    let command = BitVecCommand {
+        offset: 0,
+        bitvec: mask,
+        compression: CompressionCode::Lzma,
+        operation: BinaryOperation::Xor,
+    };
     connection
-        .send(Command::BitmapLinearXor(0, mask, CompressionCode::Lzma))
+        .send_command(command)
         .expect("could not send command");
     info!("inverted all pixels");
 }
 
-pub(crate) fn pixels_off(connection: &Connection) {
+pub(crate) fn pixels_off(connection: &Transport) {
     connection
-        .send(Command::Clear)
+        .send_command(ClearCommand)
         .expect("failed to clear pixels");
     info!("reset pixels");
 }
 
 fn pixels_image(
-    connection: &Connection,
+    connection: &Transport,
     options: SendImageOptions,
     processing_options: ImageProcessingOptions,
 ) {
@@ -54,11 +70,11 @@ fn pixels_image(
     let mut pipeline = ImageProcessingPipeline::new(processing_options);
     let bitmap = pipeline.process(image);
     connection
-        .send(Command::BitmapLinearWin(
-            Origin::ZERO,
+        .send_command(BitmapCommand {
+            origin: Origin::ZERO,
             bitmap,
-            CompressionCode::default(),
-        ))
+            compression: CompressionCode::default(),
+        })
         .expect("failed to send image command");
     info!("sent image to display");
 }

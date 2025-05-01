@@ -1,12 +1,13 @@
 use crate::{
     brightness::{brightness, brightness_set},
-    cli::{Cli, Mode, Protocol},
+    cli::{Cli, Mode},
     pixels::{pixels, pixels_off},
-    text::text
+    text::text,
+    transport::Transport,
 };
 use clap::Parser;
 use log::debug;
-use servicepoint::{Brightness, Connection};
+use servicepoint::{Brightness, UdpSocketExt};
 
 mod brightness;
 mod cli;
@@ -16,19 +17,20 @@ mod pixels;
 mod stream_stdin;
 mod stream_window;
 mod text;
+mod transport;
 
 fn main() {
     let cli = Cli::parse();
     init_logging(cli.verbose);
     debug!("running with arguments: {:?}", cli);
 
-    let connection = make_connection(cli.destination, cli.transport);
-    debug!("connection established: {:#?}", connection);
+    let transport = Transport::connect(cli.transport, &cli.destination);
+    debug!("connection established: {:#?}", transport);
 
-    execute_mode(cli.command, connection);
+    execute_mode(cli.command, transport);
 }
 
-pub fn execute_mode(mode: Mode, connection: Connection) {
+pub fn execute_mode(mode: Mode, connection: Transport) {
     match mode {
         Mode::ResetEverything => {
             brightness_set(&connection, Brightness::MAX);
@@ -36,20 +38,7 @@ pub fn execute_mode(mode: Mode, connection: Connection) {
         }
         Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
         Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
-        Mode::Text { text_command} => text(&connection, text_command),
-    }
-}
-
-fn make_connection(destination: String, transport: Protocol) -> Connection {
-    match transport {
-        Protocol::Udp => Connection::open(destination).expect("Failed to open UDP connection"),
-        Protocol::WebSocket => {
-            let url = destination.parse().expect(
-                "provided destination is not a valid url - make sure it starts with 'ws://'",
-            );
-            Connection::open_websocket(url).expect("Failed to open WebSocket connection")
-        }
-        Protocol::Fake => Connection::Fake,
+        Mode::Text { text_command } => text(&connection, text_command),
     }
 }
 

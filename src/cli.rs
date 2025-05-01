@@ -19,7 +19,7 @@ pub struct Cli {
         value_enum,
         default_value = "udp"
     )]
-    pub transport: Protocol,
+    pub transport: TransportType,
     #[clap(subcommand)]
     pub command: Mode,
     #[clap(short, long, help = "verbose logging")]
@@ -104,7 +104,7 @@ pub enum BrightnessCommand {
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
-pub enum Protocol {
+pub enum TransportType {
     Udp,
     WebSocket,
     Fake,

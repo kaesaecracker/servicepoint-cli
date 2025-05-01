@@ -1,7 +1,7 @@
-use servicepoint::Connection;
-use crate::cli::TextCommand;
-use crate::stream_stdin::stream_stdin;
+use crate::{cli::TextCommand, stream_stdin::stream_stdin, transport::Transport};
 
-pub fn text(connection: &Connection, command: TextCommand) {
-   match command { TextCommand::Stdin  { slow } => stream_stdin(connection, slow), }
+pub fn text(connection: &Transport, command: TextCommand) {
+    match command {
+        TextCommand::Stdin { slow } => stream_stdin(connection, slow),
+    }
 }
