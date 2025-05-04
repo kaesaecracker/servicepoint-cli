@@ -33,15 +33,15 @@ cargo run -- <args>
 
 ## Usage
 
-```
+```text
 Usage: servicepoint-cli [OPTIONS] <COMMAND>
 
 Commands:
-  reset-everything  Reset both pixels and brightness [aliases: r]
-  pixels            Commands for manipulating pixels [aliases: p]
-  brightness        Commands for manipulating the brightness [aliases: b]
-  text              Commands for sending text to the screen [aliases: t]
-  help              Print this message or the help of the given subcommand(s)
+  reset       Reset both pixels and brightness [aliases: r]
+  pixels      Commands for manipulating pixels [aliases: p]
+  brightness  Commands for manipulating the brightness [aliases: b]
+  text        Commands for sending text to the screen [aliases: t]
+  help        Print this message or the help of the given subcommand(s)
 
 Options:
   -d, --destination <DESTINATION>  ip:port of the servicepoint display [default: 127.0.0.1:2342]
@@ -53,7 +53,7 @@ Options:
 
 ### Pixels
 
-```
+```text
 Commands for manipulating pixels
 
 Usage: servicepoint-cli pixels <COMMAND>
@@ -68,7 +68,7 @@ Commands:
 
 #### Image
 
-```
+```text
 Send an image file (e.g. jpeg or png) to the display.
 
 Usage: servicepoint-cli pixels image [OPTIONS] <FILE_NAME>
@@ -87,7 +87,7 @@ Options:
 
 #### Screen
 
-```
+```text
 Stream the default screen capture source to the display. On Linux Wayland, this pops up a screen or window chooser, but it also may directly start streaming your main screen.
 
 Usage: servicepoint-cli pixels screen [OPTIONS]
@@ -104,7 +104,7 @@ Options:
 
 ### Brightness
 
-```
+```text
 Commands for manipulating the brightness
 
 Usage: servicepoint-cli brightness <COMMAND>
@@ -117,18 +117,18 @@ Commands:
 
 ### Text
 
-```
+```text
 Commands for sending text to the screen
 
 Usage: servicepoint-cli text <COMMAND>
 
 Commands:
-  stdin  Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`
+  stdin  Pipe text to the display, example: `journalctl | servicepoint-cli text stdin`
 ```
 
 #### Stdin
 
-```
+```text
 Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`
 
 Usage: servicepoint-cli stream stdin [OPTIONS]
@@ -137,6 +137,16 @@ Options:
   -s, --slow  Wait for a short amount of time before sending the next line
 ```
 
+### Reset
+
+```text
+Reset both pixels and brightness
+
+Usage: servicepoint-cli reset [OPTIONS]
+
+Options:
+-f, --force  hard reset screen
+```
 
 ## Contributing
 

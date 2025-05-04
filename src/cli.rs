@@ -29,7 +29,10 @@ pub struct Cli {
 #[derive(clap::Parser, std::fmt::Debug)]
 pub enum Mode {
     #[command(visible_alias = "r", about = "Reset both pixels and brightness")]
-    ResetEverything,
+    Reset {
+        #[arg(short, long, help = "hard reset screen")]
+        force: bool,
+    },
     #[command(visible_alias = "p")]
     Pixels {
         #[clap(subcommand)]
@@ -114,7 +117,7 @@ pub enum TransportType {
 #[clap(about = "Commands for sending text to the screen")]
 pub enum TextCommand {
     #[command(
-        about = "Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`"
+        about = "Pipe text to the display, example: `journalctl | servicepoint-cli text stdin`"
     )]
     Stdin {
         #[arg(

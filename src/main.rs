@@ -7,7 +7,7 @@ use crate::{
 };
 use clap::Parser;
 use log::debug;
-use servicepoint::{Brightness, UdpSocketExt};
+use servicepoint::{Brightness, HardResetCommand, UdpSocketExt};
 
 mod brightness;
 mod cli;
@@ -32,9 +32,13 @@ fn main() {
 
 pub fn execute_mode(mode: Mode, connection: Transport) {
     match mode {
-        Mode::ResetEverything => {
-            brightness_set(&connection, Brightness::MAX);
-            pixels_off(&connection);
+        Mode::Reset { force } => {
+            if force {
+                connection.send_command(HardResetCommand).unwrap()
+            } else {
+                brightness_set(&connection, Brightness::MAX);
+                pixels_off(&connection);
+            }
         }
         Mode::Pixels { pixel_command } => pixels(&connection, pixel_command),
         Mode::Brightness { brightness_command } => brightness(&connection, brightness_command),
