@@ -19,7 +19,7 @@ pub struct Cli {
         value_enum,
         default_value = "udp"
     )]
-    pub transport: Protocol,
+    pub transport: TransportType,
     #[clap(subcommand)]
     pub command: Mode,
     #[clap(short, long, help = "verbose logging")]
@@ -29,7 +29,10 @@ pub struct Cli {
 #[derive(clap::Parser, std::fmt::Debug)]
 pub enum Mode {
     #[command(visible_alias = "r", about = "Reset both pixels and brightness")]
-    ResetEverything,
+    Reset {
+        #[arg(short, long, help = "hard reset screen")]
+        force: bool,
+    },
     #[command(visible_alias = "p")]
     Pixels {
         #[clap(subcommand)]
@@ -72,6 +75,16 @@ pub enum PixelCommand {
         image_processing_options: ImageProcessingOptions,
     },
     #[command(
+        visible_alias = "v",
+        about = "Stream a video file (e.g. mp4) to the display."
+    )]
+    Video {
+        #[command(flatten)]
+        send_image_options: SendImageOptions,
+        #[command(flatten)]
+        image_processing_options: ImageProcessingOptions,
+    },
+    #[command(
         visible_alias = "s",
         about = "Stream the default screen capture source to the display. \
         On Linux Wayland, this pops up a screen or window chooser, \
@@ -104,7 +117,7 @@ pub enum BrightnessCommand {
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
-pub enum Protocol {
+pub enum TransportType {
     Udp,
     WebSocket,
     Fake,
@@ -114,7 +127,7 @@ pub enum Protocol {
 #[clap(about = "Commands for sending text to the screen")]
 pub enum TextCommand {
     #[command(
-        about = "Pipe text to the display, example: `journalctl | servicepoint-cli stream stdin`"
+        about = "Pipe text to the display, example: `journalctl | servicepoint-cli text stdin`"
     )]
     Stdin {
         #[arg(

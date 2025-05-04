@@ -1,7 +1,8 @@
 //! Based on https://github.com/WarkerAnhaltRanger/CCCB_Ledwand
 
 use image::GrayImage;
-use servicepoint::{BitVec, Bitmap, PIXEL_HEIGHT};
+use log::debug;
+use servicepoint::{Bitmap, DisplayBitVec, PIXEL_HEIGHT};
 
 type GrayHistogram = [usize; 256];
 
@@ -169,10 +170,11 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
     assert_eq!(width % 8, 0);
 
     let mut source = source.into_raw();
-    let mut destination = BitVec::repeat(false, source.len());
+    let mut destination = DisplayBitVec::repeat(false, source.len());
 
     for y in 0..height as usize {
         let start = y * width as usize;
+        let last_row = y == (height - 1) as usize;
         if y % 2 == 0 {
             for x in start..start + width as usize {
                 ostromoukhov_dither_pixel(
@@ -180,7 +182,7 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
                     &mut destination,
                     x,
                     width as usize,
-                    y == (height - 1) as usize,
+                    last_row,
                     1,
                     bias,
                 );
@@ -192,7 +194,7 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
                     &mut destination,
                     x,
                     width as usize,
-                    y == (height - 1) as usize,
+                    last_row,
                     -1,
                     bias,
                 );
@@ -200,13 +202,13 @@ pub(crate) fn ostromoukhov_dither(source: GrayImage, bias: u8) -> Bitmap {
         }
     }
 
-    Bitmap::from_bitvec(width as usize, destination)
+    Bitmap::from_bitvec(width as usize, destination).unwrap()
 }
 
 #[inline]
 fn ostromoukhov_dither_pixel(
     source: &mut [u8],
-    destination: &mut BitVec,
+    destination: &mut DisplayBitVec,
     position: usize,
     width: usize,
     last_row: bool,
@@ -217,8 +219,16 @@ fn ostromoukhov_dither_pixel(
     destination.set(position, destination_value);
 
     let mut diffuse = |to: usize, mat: i16| {
-        let diffuse_value = source[to] as i16 + mat;
-        source[to] = diffuse_value.clamp(u8::MIN.into(), u8::MAX.into()) as u8;
+        match source.get(to) {
+            None => {
+                // last row has a out of bounds error on the last pixel
+                // TODO fix the iter bounds instead of ignoring here
+            }
+            Some(val) => {
+                let diffuse_value = *val as i16 + mat;
+                source[to] = diffuse_value.clamp(u8::MIN.into(), u8::MAX.into()) as u8;
+            }
+        };
     };
 
     let lookup = if destination_value {
@@ -229,11 +239,14 @@ fn ostromoukhov_dither_pixel(
     diffuse((position as isize + direction) as usize, lookup[0]);
 
     if !last_row {
+        debug!("begin");
         diffuse(
             ((position + width) as isize - direction) as usize,
             lookup[1],
         );
+        debug!("mit");
         diffuse(((position + width) as isize) as usize, lookup[2]);
+        debug!("end");
     }
 }
 

@@ -90,8 +90,7 @@
         {
           default = pkgs.mkShell rec {
             inputsFrom = [ self.packages.${system}.default ];
-            packages = [
-              pkgs.gdb
+            packages = with pkgs; [
               (pkgs.symlinkJoin {
                 name = "rust-toolchain";
                 paths = with pkgs; [
@@ -103,7 +102,11 @@
                   cargo-expand
                 ];
               })
-              pkgs.cargo-flamegraph
+
+              cargo-flamegraph
+              gdb
+
+              ffmpeg-headless
             ];
             LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (builtins.concatMap (d: d.buildInputs) inputsFrom)}";
             RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";

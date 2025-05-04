@@ -1,8 +1,9 @@
+use crate::transport::Transport;
 use log::warn;
 use servicepoint::*;
 use std::thread::sleep;
 
-pub(crate) fn stream_stdin(connection: &Connection, slow: bool) {
+pub(crate) fn stream_stdin(connection: &Transport, slow: bool) {
     warn!("This mode will break when using multi-byte characters and does not support ANSI escape sequences yet.");
     let mut app = App {
         connection,
@@ -14,7 +15,7 @@ pub(crate) fn stream_stdin(connection: &Connection, slow: bool) {
 }
 
 struct App<'t> {
-    connection: &'t Connection,
+    connection: &'t Transport,
     mirror: CharGrid,
     y: usize,
     slow: bool,
@@ -23,7 +24,7 @@ struct App<'t> {
 impl App<'_> {
     fn run(&mut self) {
         self.connection
-            .send(Command::Clear)
+            .send_command(ClearCommand)
             .expect("couldn't clear screen");
         let last_y = self.mirror.height() - 1;
         for line in std::io::stdin().lines() {
@@ -63,10 +64,10 @@ impl App<'_> {
 
     fn send_mirror(&self) {
         self.connection
-            .send(Command::Utf8Data(
-                Origin::ZERO,
-                self.mirror.clone(),
-            ))
+            .send_command(CharGridCommand {
+                origin: Origin::ZERO,
+                grid: self.mirror.clone(),
+            })
             .expect("couldn't send screen to display");
     }
 
@@ -76,7 +77,10 @@ impl App<'_> {
         Self::line_onto_grid(&mut line_grid, 0, line);
         Self::line_onto_grid(&mut self.mirror, self.y, line);
         self.connection
-            .send(Command::Utf8Data(Origin::new(0, self.y), line_grid))
+            .send_command(CharGridCommand {
+                origin: Origin::new(0, self.y),
+                grid: line_grid,
+            })
             .expect("couldn't send single line to screen");
     }
 }
