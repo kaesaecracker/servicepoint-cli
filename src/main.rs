@@ -7,7 +7,7 @@ use crate::{
 };
 use clap::Parser;
 use log::debug;
-use servicepoint::{Brightness, HardResetCommand, UdpSocketExt};
+use servicepoint::{Brightness, HardResetCommand};
 
 mod brightness;
 mod cli;
