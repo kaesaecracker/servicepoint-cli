@@ -1,5 +1,11 @@
 # servicepoint-cli
 
+[![Release](https://git.berlin.ccc.de/servicepoint/servicepoint-cli/badges/release.svg)](https://git.berlin.ccc.de/servicepoint/servicepoint-cli/releases)
+[![crates.io](https://img.shields.io/crates/v/servicepoint-cli.svg)](https://crates.io/crates/servicepoint-cli)
+[![Crates.io Total Downloads](https://img.shields.io/crates/d/servicepoint-cli)](https://crates.io/crates/servicepoint-cli)
+![GPLv3 licensed](https://img.shields.io/crates/l/servicepoint-cli)
+[![CI](https://git.berlin.ccc.de/servicepoint/servicepoint-cli/badges/workflows/rust.yml/badge.svg)](https://git.berlin.ccc.de/servicepoint/servicepoint-cli)
+
 This repository contains a command line interface for the ServicePoint display.
 
 To send commands, this uses the [servicepoint crate](https://crates.io/crates/servicepoint).
