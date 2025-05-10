@@ -55,7 +55,6 @@
             };
             nativeBuildInputs = with pkgs; [
               pkg-config
-              libclang
               rustPlatform.bindgenHook
             ];
             strictDeps = true;
@@ -64,14 +63,13 @@
               [
                 xe
                 xz
-                clang
+                ffmpeg-headless
               ]
               ++ lib.optionals pkgs.stdenv.isLinux (
                 with pkgs;
                 [
                   dbus
                   pipewire
-                  libclang
                 ]
               );
           };
@@ -105,8 +103,6 @@
 
               cargo-flamegraph
               gdb
-
-              ffmpeg-headless
             ];
             LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (builtins.concatMap (d: d.buildInputs) inputsFrom)}";
             RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
