@@ -21,9 +21,7 @@ image = "0.25"
 fast_image_resize = { version = "5.1", features = ["image"] }
 tungstenite = "0.26"
 ffmpeg-next = "7.1"
-
-[dependencies.servicepoint]
-version = "0.15.0"
+servicepoint = "0.15.1"
 
 [profile.release]
 lto = true          # Enable link-time optimization

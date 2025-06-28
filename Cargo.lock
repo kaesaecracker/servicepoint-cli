@@ -942,6 +942,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "inherent"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c38228f24186d9cc68c729accb4d413be9eaed6ad07ff79e0270d9e56f3de13"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "interpolate_name"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1779,11 +1790,12 @@ dependencies = [
 
 [[package]]
 name = "servicepoint"
-version = "0.15.0"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91a33bff7f9db5008748b23ca0c906c276fe00694390b681f004a55968a42cfe"
+checksum = "2800caad491cb44f67e5dd5b8c61ece368eecfe588155d03c7d9864acbad6919"
 dependencies = [
  "bitvec",
+ "inherent",
  "log",
  "once_cell",
  "rust-lzma",
@@ -1792,7 +1804,7 @@ dependencies = [
 
 [[package]]
 name = "servicepoint-cli"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "clap",
  "env_logger",
