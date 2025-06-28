@@ -21,13 +21,8 @@ If you have set your PATH to include the ~/.cargo/bin, you can now run `servicep
 ## Running with nix
 
 ```shell
-# from CCCB Forgejo
 nix run git+https://git.berlin.ccc.de/servicepoint/servicepoint-cli.git -- <args>
-
-# from GitHub mirror
-nix run github:kaesaecracker/servicepoint-cli -- <args>
 ```
-
 
 ## Running a debug build
 
