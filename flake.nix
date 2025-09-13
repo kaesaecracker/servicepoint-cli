@@ -11,7 +11,7 @@
   };
 
   outputs =
-    inputs@{
+    {
       self,
       nixpkgs,
       naersk,
@@ -42,7 +42,7 @@
           naersk' = pkgs.callPackage naersk { };
         in
         rec {
-          servicepoint-cli = naersk'.buildPackage rec {
+          servicepoint-cli = naersk'.buildPackage {
             src = nix-filter.lib.filter {
               root = ./.;
               include = [
@@ -80,6 +80,14 @@
 
       legacyPackages = packages;
 
+      nixosModules.default = {
+        nixpkgs.overlays = [ self.overlays.default ];
+      };
+
+      overlays.default = final: prev: {
+        servicepoint-cli = self.legacyPackages."${prev.system}".servicepoint-cli;
+      };
+
       devShells = forAllSystems (
         {
           pkgs,
@@ -106,10 +114,12 @@
             ];
             LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath (builtins.concatMap (d: d.buildInputs) inputsFrom)}";
             RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+            RUST_LOG = "all";
+            RUST_BACKTRACE = "1";
           };
         }
       );
 
-      formatter = forAllSystems ({ pkgs, ... }: pkgs.nixfmt-rfc-style);
+      formatter = forAllSystems ({ pkgs, ... }: pkgs.nixfmt-tree);
     };
 }
