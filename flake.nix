@@ -2,10 +2,14 @@
   description = "Flake for command line interface of the ServicePoint display.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nix-filter.url = "github:numtide/nix-filter";
     naersk = {
       url = "github:nix-community/naersk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -16,9 +20,18 @@
       nixpkgs,
       naersk,
       nix-filter,
+      treefmt-nix,
     }:
     let
       lib = nixpkgs.lib;
+      treefmt-config = {
+        projectRootFile = "flake.nix";
+        programs = {
+          nixfmt.enable = true;
+          keep-sorted.enable = true;
+          rustfmt.enable = true;
+        };
+      };
       supported-systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -31,6 +44,7 @@
           system:
           f rec {
             pkgs = nixpkgs.legacyPackages.${system};
+            treefmt-eval = treefmt-nix.lib.evalModule pkgs treefmt-config;
             inherit system;
           }
         );
@@ -63,7 +77,7 @@
               [
                 xe
                 xz
-                ffmpeg-headless
+                ffmpeg_6-headless.dev
               ]
               ++ lib.optionals pkgs.stdenv.isLinux (
                 with pkgs;
@@ -120,6 +134,6 @@
         }
       );
 
-      formatter = forAllSystems ({ pkgs, ... }: pkgs.nixfmt-tree);
+      formatter = forAllSystems ({ treefmt-eval, ... }: treefmt-eval.config.build.wrapper);
     };
 }
