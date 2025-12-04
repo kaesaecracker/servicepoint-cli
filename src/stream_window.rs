@@ -7,10 +7,10 @@ use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
 use log::{debug, error, info, trace, warn};
 use scap::{
     capturer::{Capturer, Options},
-    frame::convert_bgra_to_rgb,
     frame::Frame,
+    frame::convert_bgra_to_rgb,
 };
-use servicepoint::{BitmapCommand, CompressionCode, Origin, FRAME_PACING};
+use servicepoint::{BitmapCommand, CompressionCode, FRAME_PACING, Origin};
 use std::time::{Duration, Instant};
 
 pub fn stream_window(

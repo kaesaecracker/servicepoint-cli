@@ -92,7 +92,8 @@ fn pixels_video(
 ) {
     ffmpeg::init().unwrap();
 
-    let mut ictx = ffmpeg::format::input(&options.file_name).expect("failed to open video input file");
+    let mut ictx =
+        ffmpeg::format::input(&options.file_name).expect("failed to open video input file");
 
     let input = ictx
         .streams()
@@ -103,12 +104,14 @@ fn pixels_video(
 
     let context_decoder = ffmpeg::codec::context::Context::from_parameters(input.parameters())
         .expect("could not extract video context from parameters");
-    let mut decoder = context_decoder.decoder().video()
+    let mut decoder = context_decoder
+        .decoder()
+        .video()
         .expect("failed to create decoder for video stream");
 
     let src_width = decoder.width();
     let src_height = decoder.height();
-    
+
     let mut scaler = ffmpeg::software::scaling::Context::get(
         decoder.format(),
         src_width,
@@ -117,7 +120,8 @@ fn pixels_video(
         src_width,
         src_height,
         ffmpeg::software::scaling::Flags::BILINEAR,
-    ).expect("failed to create scaling context");
+    )
+    .expect("failed to create scaling context");
 
     let mut frame_index = 0;
 
@@ -128,14 +132,16 @@ fn pixels_video(
             let mut decoded = ffmpeg::util::frame::video::Video::empty();
             let mut rgb_frame = ffmpeg::util::frame::video::Video::empty();
             while decoder.receive_frame(&mut decoded).is_ok() {
-                scaler.run(&decoded, &mut rgb_frame)
+                scaler
+                    .run(&decoded, &mut rgb_frame)
                     .expect("failed to scale frame");
 
                 let image = RgbImage::from_raw(src_width, src_height, rgb_frame.data(0).to_owned())
                     .expect("could not read rgb data to image");
                 let image = DynamicImage::from(image);
-                let bitmap= processing_pipeline.process(image);
-                connection.send_command(BitmapCommand::from(bitmap))
+                let bitmap = processing_pipeline.process(image);
+                connection
+                    .send_command(BitmapCommand::from(bitmap))
                     .expect("failed to send image command");
 
                 frame_index += 1;
@@ -145,13 +151,13 @@ fn pixels_video(
 
     for (stream, packet) in ictx.packets() {
         if stream.index() == video_stream_index {
-            decoder.send_packet(&packet)
+            decoder
+                .send_packet(&packet)
                 .expect("failed to send video packet");
             receive_and_process_decoded_frames(&mut decoder)
                 .expect("failed to process video packet");
         }
     }
     decoder.send_eof().expect("failed to send eof");
-    receive_and_process_decoded_frames(&mut decoder)
-        .expect("failed to eof packet");
+    receive_and_process_decoded_frames(&mut decoder).expect("failed to eof packet");
 }

@@ -4,7 +4,9 @@ use servicepoint::*;
 use std::thread::sleep;
 
 pub(crate) fn stream_stdin(connection: &Transport, slow: bool) {
-    warn!("This mode will break when using multi-byte characters and does not support ANSI escape sequences yet.");
+    warn!(
+        "This mode will break when using multi-byte characters and does not support ANSI escape sequences yet."
+    );
     let mut app = App {
         connection,
         mirror: CharGrid::new(TILE_WIDTH, TILE_HEIGHT),

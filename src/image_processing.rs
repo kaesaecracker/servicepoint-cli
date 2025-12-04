@@ -164,9 +164,7 @@ impl ImageProcessingPipeline {
         let result = (width, height);
         trace!(
             "scaling {:?} to {:?} to fit {:?}",
-            source,
-            result,
-            self.render_size
+            source, result, self.render_size
         );
         result
     }
