@@ -77,7 +77,7 @@
               [
                 xe
                 xz
-                ffmpeg_6-headless.dev
+                ffmpeg-headless.dev
               ]
               ++ lib.optionals pkgs.stdenv.isLinux (
                 with pkgs;
