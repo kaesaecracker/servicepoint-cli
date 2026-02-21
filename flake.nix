@@ -106,6 +106,7 @@
         {
           pkgs,
           system,
+          ...
         }:
         {
           default = pkgs.mkShell rec {
