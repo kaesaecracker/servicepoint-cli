@@ -2,12 +2,9 @@
   description = "Flake for command line interface of the ServicePoint display.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nix-filter.url = "github:numtide/nix-filter";
-    naersk = {
-      url = "github:nix-community/naersk";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    crane.url = "github:ipetkov/crane";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,7 +15,7 @@
     {
       self,
       nixpkgs,
-      naersk,
+      crane,
       nix-filter,
       treefmt-nix,
     }:
@@ -53,10 +50,8 @@
       packages = forAllSystems (
         { pkgs, ... }:
         let
-          naersk' = pkgs.callPackage naersk { };
-        in
-        rec {
-          servicepoint-cli = naersk'.buildPackage {
+          craneLib = crane.mkLib pkgs;
+          commonArgs = {
             src = nix-filter.lib.filter {
               root = ./.;
               include = [
@@ -67,11 +62,11 @@
                 ./LICENSE
               ];
             };
+            strictDeps = true;
             nativeBuildInputs = with pkgs; [
               pkg-config
               rustPlatform.bindgenHook
             ];
-            strictDeps = true;
             buildInputs =
               with pkgs;
               [
@@ -87,6 +82,14 @@
                 ]
               );
           };
+        in
+        rec {
+          servicepoint-cli = craneLib.buildPackage (
+            commonArgs
+            // {
+              cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+            }
+          );
 
           default = servicepoint-cli;
         }
