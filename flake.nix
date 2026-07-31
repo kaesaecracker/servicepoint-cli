@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
-    nix-filter.url = "github:numtide/nix-filter";
     crane.url = "github:ipetkov/crane";
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
@@ -16,7 +15,6 @@
       self,
       nixpkgs,
       crane,
-      nix-filter,
       treefmt-nix,
     }:
     let
@@ -52,16 +50,7 @@
         let
           craneLib = crane.mkLib pkgs;
           commonArgs = {
-            src = nix-filter.lib.filter {
-              root = ./.;
-              include = [
-                ./Cargo.toml
-                ./Cargo.lock
-                ./src
-                ./README.md
-                ./LICENSE
-              ];
-            };
+            src = craneLib.cleanCargoSource ./.;
             strictDeps = true;
             nativeBuildInputs = with pkgs; [
               pkg-config
