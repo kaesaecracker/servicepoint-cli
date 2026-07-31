@@ -91,7 +91,7 @@
       };
 
       overlays.default = final: prev: {
-        servicepoint-cli = self.legacyPackages."${prev.system}".servicepoint-cli;
+        servicepoint-cli = self.legacyPackages."${prev.stdenv.hostPlatform.system}".servicepoint-cli;
       };
 
       devShells = forAllSystems (
